@@ -1,44 +1,168 @@
-/**
- * ApexPulse Background Controller
- */
+import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats } from './database';
+import { initGep, registerCallbacks, cleanup as cleanupGep } from './gep-manager';
+import {
+  setPlayerName, handleMatchStateChange, handleKillFeed, handleKill,
+  handleAssist, handleDamage, handleKnockdown, handleDeath, handleRevive,
+  handleTeamUpdate, handleInventoryUpdate, handleMatchSummary,
+  handleGameModeDetected, handleMapDetected, handleLegendDetected,
+  onMatchEnd,
+} from './match-tracker';
+import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from './session-manager';
+import { setApiKey, getPlayerStats, getMapRotation } from './api-client';
+import { setupMessageListener, broadcastMatchHistory, broadcastProfile, broadcastMapRotation, broadcastSession, onMessage } from './messaging';
+import { initAuth, handlePlayerDetected, broadcastCurrentAuthState, loginSteam, loginDiscord, linkOriginManual, handleSteamCallback, handleDiscordCallback } from './auth/auth-manager';
+import { getOriginName } from './auth/origin-resolver';
+import { API_POLL_INTERVAL_MS } from '../shared/constants';
+import { AppSettings } from '../shared/types';
+
+let pollTimer: ReturnType<typeof setInterval> | null = null;
 
 class BackgroundController {
   constructor() {
     this.init();
   }
 
-  async init() {
-    console.log('ApexPulse background initialized');
-    
-    // Listen for game events
-    overwolf.games.events.onInfoUpdates2.addListener((info: overwolf.games.events.InfoUpdates2Event) => {
-      console.log('Game Info Update:', info);
+  async init(): Promise<void> {
+    console.log('[ApexPulse] Initializing...');
+
+    await initDatabase();
+    console.log('[ApexPulse] Database ready');
+
+    const settings = this.loadSettings();
+    if (settings.apiKey) setApiKey(settings.apiKey);
+
+    initAuth({
+      steamApiKey: (settings as unknown as Record<string, string>).steamApiKey ?? '',
+      discordClientId: (settings as unknown as Record<string, string>).discordClientId ?? '',
     });
 
-    overwolf.games.events.onNewEvents.addListener((events: overwolf.games.events.NewGameEvents) => {
-      console.log('New Game Events:', events);
+    initSessionManager();
+
+    setupMessageListener();
+    this.setupBackgroundMessageHandlers();
+
+    registerCallbacks({
+      onMatchStateChange: handleMatchStateChange,
+      onKillFeed: handleKillFeed,
+      onKill: handleKill,
+      onAssist: handleAssist,
+      onDamage: handleDamage,
+      onKnockdown: handleKnockdown,
+      onDeath: handleDeath,
+      onRevive: handleRevive,
+      onTeamUpdate: handleTeamUpdate,
+      onInventoryUpdate: handleInventoryUpdate,
+      onLocationUpdate: () => {},
+      onMatchSummary: handleMatchSummary,
+      onRosterUpdate: () => {},
+      onPlayerNameDetected: async (name: string) => {
+        setPlayerName(name);
+        await handlePlayerDetected(name);
+      },
+      onGameModeDetected: handleGameModeDetected,
+      onMapDetected: handleMapDetected,
+      onLegendDetected: handleLegendDetected,
+    });
+    initGep();
+
+    onMatchEnd((match) => {
+      onMatchPlayed(match);
+      this.broadcastFullState();
     });
 
-    // Register for Apex Legends (ID: 21566)
-    this.setFeatures();
+    this.startPolling(settings.apiKey ? API_POLL_INTERVAL_MS : 0);
+    this.openDashboard();
+
+    console.log('[ApexPulse] Initialization complete');
   }
 
-  setFeatures() {
-    const features = [
-      'gep_internal', 'me', 'team', 'kill', 'damage', 'death',
-      'revive', 'match_state', 'game_info', 'match_info',
-      'inventory', 'location', 'match_summary', 'roster',
-      'rank', 'kill_feed'
-    ];
+  private loadSettings(): AppSettings {
+    try {
+      const raw = localStorage.getItem('apexpulse_settings');
+      if (raw) return JSON.parse(raw);
+    } catch { /* ignore */ }
+    return {
+      apiKey: '',
+      overlayEnabled: true,
+      overlayPosition: { top: 10, left: 10 },
+      overlayOpacity: 0.8,
+      overlayHotkey: 'Shift+F1',
+      autoDetectOrigin: true,
+      pollIntervalMs: API_POLL_INTERVAL_MS,
+      sessionTimeoutMs: 30 * 60 * 1000,
+    };
+  }
 
-    overwolf.games.events.setRequiredFeatures(features, (info: overwolf.games.events.SetRequiredFeaturesResult) => {
-      if (info.success) {
-        console.log('Successfully set features for Apex Legends');
-      } else {
-        console.error('Failed to set features:', info.error);
+  private setupBackgroundMessageHandlers(): void {
+    onMessage('REQUEST_STATE', () => {
+      this.broadcastFullState();
+    });
+  }
+
+  broadcastFullState(): void {
+    broadcastMatchHistory({
+      recentMatches: getRecentMatches(50),
+      stats: getOverallStats(),
+      weaponStats: getWeaponStats(),
+      legendStats: getLegendStats(),
+    });
+
+    const session = getCurrentSession();
+    if (session) broadcastSession(session);
+
+    broadcastCurrentAuthState();
+  }
+
+  private startPolling(intervalMs: number): void {
+    if (!intervalMs) return;
+    if (pollTimer) clearInterval(pollTimer);
+
+    const poll = async () => {
+      const originName = getOriginName();
+      if (!originName) return;
+
+      const stats = await getPlayerStats(originName);
+      if (stats) broadcastProfile(stats);
+
+      const maps = await getMapRotation();
+      if (maps) broadcastMapRotation(maps);
+    };
+
+    poll();
+    pollTimer = setInterval(poll, intervalMs);
+  }
+
+  private openDashboard(): void {
+    overwolf.windows.obtainDeclaredWindow('dashboard', (result) => {
+      if (result.success) {
+        overwolf.windows.restore(result.window.id, () => {});
       }
     });
   }
+
+  onSettingsChange(settings: Partial<AppSettings>): void {
+    if (settings.apiKey !== undefined) {
+      setApiKey(settings.apiKey);
+      this.startPolling(settings.pollIntervalMs ?? API_POLL_INTERVAL_MS);
+    }
+    const current = this.loadSettings();
+    localStorage.setItem('apexpulse_settings', JSON.stringify({ ...current, ...settings }));
+  }
 }
 
-new BackgroundController();
+const controller = new BackgroundController();
+
+(window as unknown as Record<string, unknown>).apexpulse = controller;
+(window as unknown as Record<string, unknown>).loginSteam = loginSteam;
+(window as unknown as Record<string, unknown>).loginDiscord = loginDiscord;
+(window as unknown as Record<string, unknown>).linkOriginManual = linkOriginManual;
+(window as unknown as Record<string, unknown>).handleSteamCallback = handleSteamCallback;
+(window as unknown as Record<string, unknown>).handleDiscordCallback = handleDiscordCallback;
+(window as unknown as Record<string, unknown>).onSettingsChange = (s: Partial<AppSettings>) => controller.onSettingsChange(s);
+(window as unknown as Record<string, unknown>).requestState = () => controller.broadcastFullState();
+
+window.addEventListener('beforeunload', () => {
+  endCurrentSession();
+  cleanupGep();
+  closeDatabase();
+});

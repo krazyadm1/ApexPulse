@@ -9,7 +9,7 @@ import {
 } from './match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from './session-manager';
 import { processRoster, clearLobby } from './lobby-intel';
-import { setApiKey, getPlayerStats, getMapRotation } from './api-client';
+import { setApiKey, getPlayerStats, getMapRotation, getServerStatus } from './api-client';
 import { setupMessageListener, broadcastMatchHistory, broadcastProfile, broadcastMapRotation, broadcastSession, onMessage } from './messaging';
 import { initAuth, handlePlayerDetected, broadcastCurrentAuthState, loginSteam, loginDiscord, linkOriginManual, handleSteamCallback, handleDiscordCallback } from './auth/auth-manager';
 import { getOriginName } from './auth/origin-resolver';
@@ -130,7 +130,9 @@ class BackgroundController {
       if (stats) broadcastProfile(stats);
 
       const maps = await getMapRotation();
-      if (maps) broadcastMapRotation(maps);
+      const servers = await getServerStatus();
+      const serversOnline = servers ? Object.values(servers).every(r => r.Status === 'UP') : true;
+      if (maps) broadcastMapRotation({ rotation: maps, serversOnline });
     };
 
     poll();

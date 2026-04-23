@@ -84,6 +84,22 @@ const HeirloomPackTracker: React.FC = () => {
       }
     };
     window.addEventListener('storage', handleStorage);
+
+    // Listen for automatic pack detection from background
+    try {
+      overwolf.windows.onMessageReceived.addListener((message: { id: string; content: string }) => {
+        try {
+          const parsed = JSON.parse(message.content);
+          if (parsed.type === 'PACK_UPDATE') {
+            const count = parsed.payload?.count;
+            if (typeof count === 'number') {
+              setPackCount(Math.max(0, Math.min(count, PACK_PITY)));
+            }
+          }
+        } catch { /* ignore */ }
+      });
+    } catch { /* not in Overwolf */ }
+
     return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
@@ -144,7 +160,7 @@ const HeirloomPackTracker: React.FC = () => {
       </div>
 
       <p className="text-gray-500 text-xs mt-3">
-        Track your pack count manually in Settings. Guaranteed Heirloom Shards at 500 packs.
+        Auto-detects pack openings via screen capture. Set your starting count in Settings.
       </p>
     </div>
   );

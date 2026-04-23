@@ -9,6 +9,8 @@ import {
 } from './match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from './session-manager';
 import { processRoster, clearLobby } from './lobby-intel';
+import { initPackDetector, startScanning, stopScanning, registerPackCallbacks, cleanupPackDetector } from './pack-detector';
+import { broadcastPackUpdate } from './messaging';
 import { setApiKey, getPlayerStats, getMapRotation, getServerStatus } from './api-client';
 import { setupMessageListener, broadcastMatchHistory, broadcastProfile, broadcastMapRotation, broadcastSession, onMessage } from './messaging';
 import { initAuth, handlePlayerDetected, broadcastCurrentAuthState, loginSteam, loginDiscord, linkOriginManual, handleSteamCallback, handleDiscordCallback } from './auth/auth-manager';
@@ -42,8 +44,30 @@ class BackgroundController {
     setupMessageListener();
     this.setupBackgroundMessageHandlers();
 
+    // Pack detector
+    await initPackDetector();
+    registerPackCallbacks({
+      onPacksOpened: (count, newTotal) => {
+        broadcastPackUpdate(newTotal, count);
+      },
+      onPackScreenDetected: (packCount) => {
+        console.log(`[ApexPulse] Pack screen detected: ${packCount} packs available`);
+      },
+      onPackScreenLeft: () => {
+        console.log('[ApexPulse] Left pack screen');
+      },
+    });
+
     registerCallbacks({
-      onMatchStateChange: handleMatchStateChange,
+      onMatchStateChange: (state) => {
+        handleMatchStateChange(state);
+        // Stop scanning during matches, resume after
+        if (state === 'active') {
+          stopScanning();
+        } else {
+          startScanning();
+        }
+      },
       onKillFeed: handleKillFeed,
       onKill: handleKill,
       onAssist: handleAssist,
@@ -73,6 +97,8 @@ class BackgroundController {
       clearLobby();
       this.broadcastFullState();
     });
+
+    startScanning();
 
     this.startPolling(settings.apiKey ? API_POLL_INTERVAL_MS : 0);
     this.openDashboard();
@@ -191,5 +217,6 @@ const controller = new BackgroundController();
 window.addEventListener('beforeunload', () => {
   endCurrentSession();
   cleanupGep();
+  cleanupPackDetector();
   closeDatabase();
 });

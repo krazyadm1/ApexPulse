@@ -118,3 +118,7 @@ export function broadcastOriginDetected(name: string, uid: string): void {
 export function broadcastLobbyIntel<T>(payload: T): void {
   broadcast({ type: 'LOBBY_INTEL_UPDATE', payload, timestamp: Date.now() });
 }
+
+export function broadcastPackUpdate(count: number, justOpened: number): void {
+  broadcast({ type: 'PACK_UPDATE', payload: { count, justOpened }, timestamp: Date.now() });
+}

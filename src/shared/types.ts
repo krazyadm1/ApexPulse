@@ -323,7 +323,8 @@ export type MessageType =
   | 'SESSION_UPDATE'
   | 'ORIGIN_DETECTED'
   | 'REQUEST_STATE'
-  | 'LOBBY_INTEL_UPDATE';
+  | 'LOBBY_INTEL_UPDATE'
+  | 'PACK_UPDATE';
 
 export interface WindowMessage<T = unknown> {
   type: MessageType;

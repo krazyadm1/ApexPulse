@@ -2,10 +2,48 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
-module.exports = {
+const mainConfig = {
   mode: 'development',
+  target: 'electron-main',
+  entry: { main: './src/main/main.ts' },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].js',
+  },
+  module: {
+    rules: [{ test: /\.ts$/, use: 'ts-loader', exclude: /node_modules/ }],
+  },
+  resolve: {
+    extensions: ['.ts', '.js'],
+    alias: { '@': path.resolve(__dirname, 'src') },
+  },
+  externals: {
+    'better-sqlite3': 'commonjs better-sqlite3',
+    '@overwolf/ow-electron': 'commonjs @overwolf/ow-electron',
+  },
+  node: { __dirname: false, __filename: false },
+  devtool: 'source-map',
+};
+
+const preloadConfig = {
+  mode: 'development',
+  target: 'electron-preload',
+  entry: { preload: './src/main/preload.ts' },
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: '[name].js',
+  },
+  module: {
+    rules: [{ test: /\.ts$/, use: 'ts-loader', exclude: /node_modules/ }],
+  },
+  resolve: { extensions: ['.ts', '.js'] },
+  devtool: 'source-map',
+};
+
+const rendererConfig = {
+  mode: 'development',
+  target: 'web',
   entry: {
-    background: './src/background/background.ts',
     dashboard: './src/dashboard/index.tsx',
     overlay: './src/overlay/index.tsx',
   },
@@ -15,29 +53,15 @@ module.exports = {
   },
   module: {
     rules: [
-      {
-        test: /\.tsx?$/,
-        use: 'ts-loader',
-        exclude: /node_modules/,
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader', 'postcss-loader'],
-      },
+      { test: /\.tsx?$/, use: 'ts-loader', exclude: /node_modules/ },
+      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
     ],
   },
   resolve: {
     extensions: ['.tsx', '.ts', '.js'],
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
-    },
+    alias: { '@': path.resolve(__dirname, 'src') },
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: './background.html',
-      filename: 'background.html',
-      chunks: ['background'],
-    }),
     new HtmlWebpackPlugin({
       template: './dashboard.html',
       filename: 'dashboard.html',
@@ -50,11 +74,11 @@ module.exports = {
     }),
     new CopyPlugin({
       patterns: [
-        { from: 'manifest.json', to: 'manifest.json' },
         { from: 'assets', to: 'assets', noErrorOnMissing: true },
-        { from: 'node_modules/sql.js/dist/sql-wasm.wasm', to: 'sql-wasm.wasm' },
       ],
     }),
   ],
   devtool: 'source-map',
 };
+
+module.exports = [mainConfig, preloadConfig, rendererConfig];

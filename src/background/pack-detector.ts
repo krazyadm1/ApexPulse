@@ -125,27 +125,20 @@ function restartScanTimer(intervalMs: number): void {
 
 // === Screen Capture ===
 
-function captureGameScreen(): Promise<string | null> {
-  return new Promise((resolve) => {
-    try {
-      overwolf.media.getScreenshotUrl(
-        {
-          roundAwayFromZero: true,
-          rescale: { width: 1920, height: 1080 },
-          crop: { x: 0, y: 0, width: 1920, height: 1080 },
-        },
-        (result) => {
-          if (result.success && result.url) {
-            resolve(result.url);
-          } else {
-            resolve(null);
-          }
-        }
-      );
-    } catch {
-      resolve(null);
+async function captureGameScreen(): Promise<string | null> {
+  try {
+    const { desktopCapturer } = require('electron');
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: 1920, height: 1080 },
+    });
+    if (sources.length > 0) {
+      return sources[0].thumbnail.toDataURL();
     }
-  });
+  } catch {
+    // desktopCapturer not available
+  }
+  return null;
 }
 
 function loadImageToCanvas(url: string): Promise<HTMLCanvasElement | null> {
@@ -331,12 +324,26 @@ function preprocessForOCR(imageData: ImageData): void {
 // === Pack Count Storage ===
 
 function getStoredPackCount(): number {
-  const stored = localStorage.getItem('apexpulse_pack_count');
-  return stored ? parseInt(stored, 10) || 0 : 0;
+  try {
+    const { app } = require('electron');
+    const path = require('path');
+    const fs = require('fs');
+    const filePath = path.join(app.getPath('userData'), 'pack-count.json');
+    const data = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+    return data.count || 0;
+  } catch {
+    return 0;
+  }
 }
 
 function setStoredPackCount(count: number): void {
-  localStorage.setItem('apexpulse_pack_count', String(count));
+  try {
+    const { app } = require('electron');
+    const path = require('path');
+    const fs = require('fs');
+    const filePath = path.join(app.getPath('userData'), 'pack-count.json');
+    fs.writeFileSync(filePath, JSON.stringify({ count }));
+  } catch { /* ignore */ }
 }
 
 export function getPackCount(): number {

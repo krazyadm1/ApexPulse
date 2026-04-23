@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { AppSettings, WindowMessage } from '../shared/types';
 import { DEFAULT_SETTINGS } from '../shared/constants';
-import { onMessage } from '../background/messaging';
+import { onMessage, sendToMain } from '../background/messaging';
 
 interface SettingsState extends AppSettings {
   init: () => void;
@@ -44,13 +44,6 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       return partial;
     });
 
-    try {
-      const bgWindow = overwolf.windows.getMainWindow();
-      if (bgWindow && (bgWindow as unknown as { onSettingsChange?: (s: Partial<AppSettings>) => void }).onSettingsChange) {
-        (bgWindow as unknown as { onSettingsChange: (s: Partial<AppSettings>) => void }).onSettingsChange(partial);
-      }
-    } catch {
-      // Background window not available
-    }
+    sendToMain('update-settings', partial);
   },
 }));

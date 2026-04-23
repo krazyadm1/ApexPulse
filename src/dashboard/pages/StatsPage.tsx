@@ -86,19 +86,15 @@ const HeirloomPackTracker: React.FC = () => {
     window.addEventListener('storage', handleStorage);
 
     // Listen for automatic pack detection from background
-    try {
-      overwolf.windows.onMessageReceived.addListener((message: { id: string; content: string }) => {
-        try {
-          const parsed = JSON.parse(message.content);
-          if (parsed.type === 'PACK_UPDATE') {
-            const count = parsed.payload?.count;
-            if (typeof count === 'number') {
-              setPackCount(Math.max(0, Math.min(count, PACK_PITY)));
-            }
-          }
-        } catch { /* ignore */ }
+    const api = (window as unknown as { apexPulse?: { on: (ch: string, cb: (...args: unknown[]) => void) => void } }).apexPulse;
+    if (api) {
+      api.on('pack-update', (data) => {
+        const payload = data as { count: number };
+        if (typeof payload.count === 'number') {
+          setPackCount(Math.max(0, Math.min(payload.count, PACK_PITY)));
+        }
       });
-    } catch { /* not in Overwolf */ }
+    }
 
     return () => window.removeEventListener('storage', handleStorage);
   }, []);

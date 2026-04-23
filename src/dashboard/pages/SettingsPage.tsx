@@ -4,12 +4,13 @@ import { useAuthStore } from '../../stores/authStore';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-function getBgWindow(): Record<string, unknown> | null {
-  try {
-    return overwolf.windows.getMainWindow() as unknown as Record<string, unknown>;
-  } catch {
-    return null;
-  }
+type ApexPulseApi = {
+  send: (ch: string, data?: unknown) => void;
+  invoke: (ch: string, data?: unknown) => Promise<unknown>;
+};
+
+function getApi(): ApexPulseApi | null {
+  return (window as unknown as { apexPulse?: ApexPulseApi }).apexPulse ?? null;
 }
 
 // ─── Toggle Switch ───────────────────────────────────────────────────────────
@@ -141,26 +142,20 @@ export default function SettingsPage() {
   function handleLinkOrigin() {
     const name = originInput.trim();
     if (!name) return;
-    const bg = getBgWindow();
-    if (bg && typeof bg.linkOriginManual === 'function') {
-      (bg.linkOriginManual as (n: string) => void)(name);
-    }
+    const api = getApi();
+    if (api) api.invoke('link-origin-manual', name);
   }
 
   // ── Steam ──
   function handleLoginSteam() {
-    const bg = getBgWindow();
-    if (bg && typeof bg.loginSteam === 'function') {
-      (bg.loginSteam as () => void)();
-    }
+    const api = getApi();
+    if (api) api.send('login-steam');
   }
 
   // ── Discord ──
   function handleLoginDiscord() {
-    const bg = getBgWindow();
-    if (bg && typeof bg.loginDiscord === 'function') {
-      (bg.loginDiscord as () => void)();
-    }
+    const api = getApi();
+    if (api) api.send('login-discord');
   }
 
   // ── Overlay opacity (local for smooth slider, flush on change end) ──

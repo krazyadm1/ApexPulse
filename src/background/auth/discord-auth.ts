@@ -1,3 +1,4 @@
+import { shell } from 'electron';
 import { DISCORD_AUTH_URL, DISCORD_TOKEN_URL, DISCORD_API_BASE, AUTH_CALLBACK_BASE } from '../../shared/constants';
 import { upsertUserAccount } from '../database';
 import { broadcastAuthChange } from '../messaging';
@@ -105,6 +106,6 @@ export async function exchangeDiscordCode(code: string): Promise<boolean> {
 
 export function initiateDiscordLogin(): void {
   getDiscordAuthUrl().then(url => {
-    overwolf.utils.openUrlInDefaultBrowser(url);
+    shell.openExternal(url);
   });
 }

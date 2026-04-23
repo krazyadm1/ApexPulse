@@ -6,35 +6,6 @@ import { LEGENDS } from '../shared/legend-map';
 const App: React.FC = () => {
   const { isLive, kills, damage, squadKills, teamsLeft, legend, mapName, weaponKills, matchState, lobbyPlayers } = useLiveStore();
 
-  // Position persistence
-  React.useEffect(() => {
-    try {
-      const saved = localStorage.getItem('apexpulse_overlay_pos');
-      if (saved) {
-        const pos = JSON.parse(saved);
-        overwolf.windows.getCurrentWindow((result) => {
-          if (result.success) {
-            overwolf.windows.changePosition(result.window.id, pos.left, pos.top, () => {});
-          }
-        });
-      }
-
-      const savePosition = () => {
-        overwolf.windows.getCurrentWindow((result) => {
-          if (result.success) {
-            const { left, top } = result.window;
-            localStorage.setItem('apexpulse_overlay_pos', JSON.stringify({ left, top }));
-          }
-        });
-      };
-
-      const interval = setInterval(savePosition, 5000);
-      return () => clearInterval(interval);
-    } catch {
-      // Not in Overwolf environment
-    }
-  }, []);
-
   // Idle state
   if (!isLive && matchState === 'idle' && lobbyPlayers.length === 0) {
     return (

@@ -16,10 +16,9 @@ const LinkAccountPage: React.FC<LinkAccountPageProps> = ({ onLinked, onSkip }) =
     setErrorMsg('');
 
     try {
-      const bgWindow = overwolf.windows.getMainWindow();
-      const linkFn = (bgWindow as unknown as { linkOriginManual?: (n: string) => Promise<boolean> }).linkOriginManual;
-      if (linkFn) {
-        const success = await linkFn(name.trim());
+      const api = (window as unknown as { apexPulse?: { invoke: (ch: string, data?: unknown) => Promise<unknown> } }).apexPulse;
+      if (api) {
+        const success = await api.invoke('link-origin-manual', name.trim());
         if (success) {
           setStatus('success');
           setTimeout(onLinked, 1000);

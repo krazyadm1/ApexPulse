@@ -1,3 +1,4 @@
+import { shell } from 'electron';
 import { STEAM_OPENID_URL, AUTH_CALLBACK_BASE } from '../../shared/constants';
 import { upsertUserAccount } from '../database';
 import { broadcastAuthChange } from '../messaging';
@@ -80,5 +81,5 @@ export async function completeSteamLogin(callbackUrl: string, steamApiKey: strin
 
 export function initiateSteamLogin(): void {
   const url = getSteamOpenIdUrl();
-  overwolf.utils.openUrlInDefaultBrowser(url);
+  shell.openExternal(url);
 }

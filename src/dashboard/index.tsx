@@ -13,12 +13,8 @@ useLiveStore.getState().init();
 useSettingsStore.getState().init();
 
 setTimeout(() => {
-  try {
-    const bgWindow = overwolf.windows.getMainWindow();
-    if (bgWindow && (bgWindow as unknown as { requestState?: () => void }).requestState) {
-      (bgWindow as unknown as { requestState: () => void }).requestState();
-    }
-  } catch { /* background not ready yet */ }
+  const api = (window as unknown as { apexPulse?: { send: (ch: string) => void } }).apexPulse;
+  if (api) api.send('request-state');
 }, 500);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(

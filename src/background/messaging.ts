@@ -1,83 +1,68 @@
 import { WindowMessage, MessageType } from '../shared/types';
-import { WINDOW_NAMES } from '../shared/constants';
 
-// === Types ===
+type MessageHandler = (message: WindowMessage) => void;
+const handlers: Map<MessageType, Set<MessageHandler>> = new Map();
 
-export type MessageHandler = (message: WindowMessage) => void;
+// Map from MessageType to kebab-case IPC channel
+const channelMap: Record<MessageType, string> = {
+  'LIVE_MATCH_UPDATE': 'live-match-update',
+  'MATCH_ENDED': 'match-ended',
+  'MATCH_HISTORY_UPDATE': 'match-history-update',
+  'PROFILE_UPDATE': 'profile-update',
+  'MAP_ROTATION_UPDATE': 'map-rotation-update',
+  'AUTH_STATE_CHANGE': 'auth-state-change',
+  'SETTINGS_UPDATE': 'settings-update',
+  'SESSION_UPDATE': 'session-update',
+  'ORIGIN_DETECTED': 'origin-detected',
+  'REQUEST_STATE': 'request-state',
+  'LOBBY_INTEL_UPDATE': 'lobby-intel-update',
+  'PACK_UPDATE': 'pack-update',
+};
 
-// === Handler Registry ===
+// Injected by main process
+let broadcastFn: ((channel: string, data: unknown) => void) | null = null;
 
-const registry = new Map<MessageType, Set<MessageHandler>>();
-
-// === Registration ===
+export function setBroadcastFn(fn: (channel: string, data: unknown) => void): void {
+  broadcastFn = fn;
+}
 
 export function onMessage(type: MessageType, handler: MessageHandler): () => void {
-  if (!registry.has(type)) {
-    registry.set(type, new Set());
-  }
-  registry.get(type)!.add(handler);
-
-  return () => {
-    registry.get(type)?.delete(handler);
-  };
+  if (!handlers.has(type)) handlers.set(type, new Set());
+  handlers.get(type)!.add(handler);
+  return () => handlers.get(type)?.delete(handler);
 }
 
-// === Internal Dispatch ===
-
-function dispatch(message: WindowMessage): void {
-  const handlers = registry.get(message.type);
-  if (handlers) {
-    for (const handler of handlers) {
-      handler(message);
-    }
-  }
-}
-
-// === Background Listener ===
-
-export function setupMessageListener(): void {
-  overwolf.windows.onMessageReceived.addListener((event: { id: string; content: string }) => {
-    try {
-      const message = JSON.parse(event.content) as WindowMessage;
-      dispatch(message);
-    } catch {
-      // Ignore malformed messages
-    }
-  });
-}
-
-// === Renderer Listener ===
-
+// For renderer windows: set up IPC listener via preload bridge
 export function setupRendererListener(): void {
-  overwolf.windows.onMessageReceived.addListener((event: { id: string; content: string }) => {
-    try {
-      const message = JSON.parse(event.content) as WindowMessage;
-      dispatch(message);
-    } catch {
-      // Ignore malformed messages
-    }
-  });
+  const api = (window as unknown as { apexPulse?: { on: (ch: string, cb: (...args: unknown[]) => void) => void } }).apexPulse;
+  if (!api) return;
+
+  for (const [msgType, channel] of Object.entries(channelMap)) {
+    api.on(channel, (data: unknown) => {
+      const message: WindowMessage = {
+        type: msgType as MessageType,
+        payload: data,
+        timestamp: Date.now(),
+      };
+      const typeHandlers = handlers.get(msgType as MessageType);
+      if (typeHandlers) {
+        typeHandlers.forEach(h => h(message));
+      }
+    });
+  }
 }
 
-// === Sending ===
-
-export function sendToWindow(windowName: string, message: WindowMessage): void {
-  overwolf.windows.getWindow(windowName, (result: { success: boolean; window: { id: string } }) => {
-    if (result.success && result.window?.id) {
-      const content = JSON.stringify(message);
-      overwolf.windows.sendMessage(result.window.id, message.type, content, () => {
-        // Fire and forget
-      });
-    }
-  });
+// For main process: also kept for backward compat
+export function setupMessageListener(): void {
+  // No-op in Electron — IPC handlers are in main.ts
 }
 
-export function broadcast(message: WindowMessage): void {
-  sendToWindow(WINDOW_NAMES.dashboard, message);
-  sendToWindow(WINDOW_NAMES.overlay, message);
+function broadcast(message: WindowMessage): void {
+  const channel = channelMap[message.type];
+  if (channel && broadcastFn) {
+    broadcastFn(channel, message.payload);
+  }
 }
-
-// === Convenience Broadcasters ===
 
 export function broadcastLiveUpdate<T>(payload: T): void {
   broadcast({ type: 'LIVE_MATCH_UPDATE', payload, timestamp: Date.now() });
@@ -121,4 +106,16 @@ export function broadcastLobbyIntel<T>(payload: T): void {
 
 export function broadcastPackUpdate(count: number, justOpened: number): void {
   broadcast({ type: 'PACK_UPDATE', payload: { count, justOpened }, timestamp: Date.now() });
+}
+
+// Convenience for renderer to send to main
+export function sendToMain(channel: string, data?: unknown): void {
+  const api = (window as unknown as { apexPulse?: { send: (ch: string, data?: unknown) => void } }).apexPulse;
+  if (api) api.send(channel, data);
+}
+
+export function invokeMain(channel: string, data?: unknown): Promise<unknown> {
+  const api = (window as unknown as { apexPulse?: { invoke: (ch: string, data?: unknown) => Promise<unknown> } }).apexPulse;
+  if (api) return api.invoke(channel, data);
+  return Promise.reject(new Error('Not in Electron renderer'));
 }

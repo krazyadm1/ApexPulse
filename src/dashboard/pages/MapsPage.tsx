@@ -2,9 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   ApexApiMapRotationResponse,
   ApexApiCraftingResponse,
-  WindowMessage,
 } from '../../shared/types';
-import { WINDOW_NAMES } from '../../shared/constants';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -194,55 +192,22 @@ const MapsPage: React.FC = () => {
   });
 
   useEffect(() => {
-    // Listen for messages from the background window
-    const handleMessage = (event: { id: string; content: string }) => {
-      try {
-        const message = JSON.parse(event.content) as WindowMessage;
-
-        if (message.type === 'MAP_ROTATION_UPDATE') {
-          const payload = message.payload as {
-            rotation?: ApexApiMapRotationResponse;
-            crafting?: ApexApiCraftingResponse[];
-            serversOnline?: boolean;
-          };
-          setState((prev) => ({
-            rotation: payload.rotation ?? prev.rotation,
-            crafting: payload.crafting ?? prev.crafting,
-            serversOnline: payload.serversOnline ?? prev.serversOnline,
-          }));
-        }
-      } catch {
-        // Ignore malformed messages
-      }
-    };
-
-    overwolf.windows.onMessageReceived.addListener(handleMessage);
-
-    // Request current state from the background on mount
-    overwolf.windows.getWindow(
-      WINDOW_NAMES.background,
-      (result: { success: boolean; window: { id: string } }) => {
-        if (result.success && result.window?.id) {
-          const requestMsg: WindowMessage = {
-            type: 'REQUEST_STATE',
-            payload: { target: 'MAP_ROTATION_UPDATE' },
-            timestamp: Date.now(),
-          };
-          overwolf.windows.sendMessage(
-            result.window.id,
-            requestMsg.type,
-            JSON.stringify(requestMsg),
-            () => {
-              // Fire and forget
-            }
-          );
-        }
-      }
-    );
-
-    return () => {
-      overwolf.windows.onMessageReceived.removeListener(handleMessage);
-    };
+    const api = (window as unknown as { apexPulse?: { on: (ch: string, cb: (...args: unknown[]) => void) => void; send: (ch: string) => void } }).apexPulse;
+    if (api) {
+      api.on('map-rotation-update', (data) => {
+        const payload = data as {
+          rotation?: ApexApiMapRotationResponse;
+          crafting?: ApexApiCraftingResponse[];
+          serversOnline?: boolean;
+        };
+        setState((prev) => ({
+          rotation: payload.rotation ?? prev.rotation,
+          crafting: payload.crafting ?? prev.crafting,
+          serversOnline: payload.serversOnline ?? prev.serversOnline,
+        }));
+      });
+      api.send('request-state');
+    }
   }, []);
 
   const { rotation, crafting, serversOnline } = state;

@@ -38,14 +38,8 @@ const App: React.FC = () => {
       return;
     }
 
-    try {
-      const bgWindow = overwolf.windows.getMainWindow();
-      if (method === 'steam') {
-        (bgWindow as unknown as { loginSteam?: () => void }).loginSteam?.();
-      } else {
-        (bgWindow as unknown as { loginDiscord?: () => void }).loginDiscord?.();
-      }
-    } catch { /* not in Overwolf */ }
+    const api = (window as unknown as { apexPulse?: { send: (ch: string) => void } }).apexPulse;
+    if (api) api.send(method === 'steam' ? 'login-steam' : 'login-discord');
 
     setOnboardStep('link');
   };

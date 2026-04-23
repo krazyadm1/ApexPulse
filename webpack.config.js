@@ -52,6 +52,7 @@ module.exports = {
       patterns: [
         { from: 'manifest.json', to: 'manifest.json' },
         { from: 'assets', to: 'assets', noErrorOnMissing: true },
+        { from: 'node_modules/sql.js/dist/sql-wasm.wasm', to: 'sql-wasm.wasm' },
       ],
     }),
   ],

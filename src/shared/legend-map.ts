@@ -1,53 +1,30 @@
 import { LegendInfo } from './types';
 
 export const LEGENDS: Record<string, LegendInfo> = {
-  'bangalore': {
-    id: 'bangalore',
-    displayName: 'Bangalore',
-    class: 'Assault',
-    tactical: 'Smoke Launcher',
-    ultimate: 'Rolling Thunder',
-    passive: 'Double Time'
-  },
-  'bloodhound': {
-    id: 'bloodhound',
-    displayName: 'Bloodhound',
-    class: 'Recon',
-    tactical: 'Eye of the Allfather',
-    ultimate: 'Beast of the Hunt',
-    passive: 'Tracker'
-  },
-  'gibraltar': {
-    id: 'gibraltar',
-    displayName: 'Gibraltar',
-    class: 'Support',
-    tactical: 'Dome of Protection',
-    ultimate: 'Defensive Bombardment',
-    passive: 'Gun Shield'
-  },
-  'lifeline': {
-    id: 'lifeline',
-    displayName: 'Lifeline',
-    class: 'Support',
-    tactical: 'D.O.C. Heal Drone',
-    ultimate: 'Care Package',
-    passive: 'Combat Medic'
-  },
-  'pathfinder': {
-    id: 'pathfinder',
-    displayName: 'Pathfinder',
-    class: 'Skirmisher',
-    tactical: 'Grappling Hook',
-    ultimate: 'Zipline Gun',
-    passive: 'Insider Knowledge'
-  },
-  'wraith': {
-    id: 'wraith',
-    displayName: 'Wraith',
-    class: 'Skirmisher',
-    tactical: 'Into the Void',
-    ultimate: 'Dimensional Rift',
-    passive: 'Voices from the Void'
-  },
-  // Add more legends as needed
+  bangalore: { id: 'bangalore', displayName: 'Bangalore', class: 'Assault', tactical: 'Smoke Launcher', ultimate: 'Rolling Thunder', passive: 'Double Time' },
+  bloodhound: { id: 'bloodhound', displayName: 'Bloodhound', class: 'Recon', tactical: 'Eye of the Allfather', ultimate: 'Beast of the Hunt', passive: 'Tracker' },
+  caustic: { id: 'caustic', displayName: 'Caustic', class: 'Controller', tactical: 'Nox Gas Trap', ultimate: 'Nox Gas Grenade', passive: 'Nox Vision' },
+  crypto: { id: 'crypto', displayName: 'Crypto', class: 'Recon', tactical: 'Surveillance Drone', ultimate: 'Drone EMP', passive: 'Neurolink' },
+  fuse: { id: 'fuse', displayName: 'Fuse', class: 'Assault', tactical: 'Knuckle Cluster', ultimate: 'The Motherlode', passive: 'Grenadier' },
+  gibraltar: { id: 'gibraltar', displayName: 'Gibraltar', class: 'Support', tactical: 'Dome of Protection', ultimate: 'Defensive Bombardment', passive: 'Gun Shield' },
+  horizon: { id: 'horizon', displayName: 'Horizon', class: 'Skirmisher', tactical: 'Gravity Lift', ultimate: 'Black Hole', passive: 'Spacewalk' },
+  lifeline: { id: 'lifeline', displayName: 'Lifeline', class: 'Support', tactical: 'D.O.C. Heal Drone', ultimate: 'Care Package', passive: 'Combat Medic' },
+  loba: { id: 'loba', displayName: 'Loba', class: 'Support', tactical: 'Burglar\'s Best Friend', ultimate: 'Black Market Boutique', passive: 'Eye for Quality' },
+  mirage: { id: 'mirage', displayName: 'Mirage', class: 'Support', tactical: 'Psyche Out', ultimate: 'Life of the Party', passive: 'Now You See Me...' },
+  newcastle: { id: 'newcastle', displayName: 'Newcastle', class: 'Support', tactical: 'Mobile Shield', ultimate: 'Castle Wall', passive: 'Retrieve the Wounded' },
+  octane: { id: 'octane', displayName: 'Octane', class: 'Skirmisher', tactical: 'Stim', ultimate: 'Launch Pad', passive: 'Swift Mend' },
+  pathfinder: { id: 'pathfinder', displayName: 'Pathfinder', class: 'Skirmisher', tactical: 'Grappling Hook', ultimate: 'Zipline Gun', passive: 'Insider Knowledge' },
+  rampart: { id: 'rampart', displayName: 'Rampart', class: 'Controller', tactical: 'Amped Cover', ultimate: 'Sheila', passive: 'Modded Loader' },
+  revenant: { id: 'revenant', displayName: 'Revenant', class: 'Assault', tactical: 'Shadow Pounce', ultimate: 'Forged Shadows', passive: 'Assassin\'s Instinct' },
+  seer: { id: 'seer', displayName: 'Seer', class: 'Recon', tactical: 'Focus of Attention', ultimate: 'Exhibit', passive: 'Heart Seeker' },
+  valkyrie: { id: 'valkyrie', displayName: 'Valkyrie', class: 'Skirmisher', tactical: 'Missile Swarm', ultimate: 'Skyward Dive', passive: 'VTOL Jets' },
+  vantage: { id: 'vantage', displayName: 'Vantage', class: 'Recon', tactical: 'Echo Relocation', ultimate: 'Sniper\'s Mark', passive: 'Spotter\'s Lens' },
+  wattson: { id: 'wattson', displayName: 'Wattson', class: 'Controller', tactical: 'Perimeter Security', ultimate: 'Interception Pylon', passive: 'Spark of Genius' },
+  wraith: { id: 'wraith', displayName: 'Wraith', class: 'Skirmisher', tactical: 'Into the Void', ultimate: 'Dimensional Rift', passive: 'Voices from the Void' },
+  ash: { id: 'ash', displayName: 'Ash', class: 'Assault', tactical: 'Arc Snare', ultimate: 'Phase Breach', passive: 'Marked for Death' },
+  mad_maggie: { id: 'mad_maggie', displayName: 'Mad Maggie', class: 'Assault', tactical: 'Riot Drill', ultimate: 'Wrecking Ball', passive: 'Warlord\'s Ire' },
+  ballistic: { id: 'ballistic', displayName: 'Ballistic', class: 'Assault', tactical: 'Whistler', ultimate: 'Tempest', passive: 'Sling' },
+  catalyst: { id: 'catalyst', displayName: 'Catalyst', class: 'Controller', tactical: 'Piercing Spikes', ultimate: 'Dark Veil', passive: 'Barricade' },
+  conduit: { id: 'conduit', displayName: 'Conduit', class: 'Support', tactical: 'Radiant Transfer', ultimate: 'Energy Barricade', passive: 'Savior\'s Speed' },
+  alter: { id: 'alter', displayName: 'Alter', class: 'Skirmisher', tactical: 'Void Passage', ultimate: 'Void Nexus', passive: 'Gift from the Rift' },
 };

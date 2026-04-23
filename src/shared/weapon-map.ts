@@ -13,8 +13,8 @@ export const WEAPON_MAP: Record<string, WeaponInfo> = {
   'car': { display: 'C.A.R. SMG', category: 'SMG', ammo: 'Light/Heavy' },
   'devotion': { display: 'Devotion LMG', category: 'LMG', ammo: 'Energy' },
   'lstar': { display: 'L-STAR EMG', category: 'LMG', ammo: 'Energy' },
-  'spitfire': { display: 'M600 Spitfire', category: 'Light', ammo: 'Light' },
-  'rampage': { display: 'Rampage LMG', category: 'Heavy', ammo: 'Heavy' },
+  'spitfire': { display: 'M600 Spitfire', category: 'LMG', ammo: 'Light' },
+  'rampage': { display: 'Rampage LMG', category: 'LMG', ammo: 'Heavy' },
   'g7': { display: 'G7 Scout', category: 'Marksman', ammo: 'Light' },
   'triple_take': { display: 'Triple Take', category: 'Marksman', ammo: 'Energy' },
   '3030': { display: '30-30 Repeater', category: 'Marksman', ammo: 'Heavy' },
@@ -31,4 +31,5 @@ export const WEAPON_MAP: Record<string, WeaponInfo> = {
   're45': { display: 'RE-45 Auto', category: 'Pistol', ammo: 'Light' },
   'wingman': { display: 'Wingman', category: 'Pistol', ammo: 'Sniper' },
   'melee': { display: 'Melee', category: 'Melee', ammo: 'None' },
+  'bleed_out': { display: 'Bleed Out', category: 'Environmental', ammo: 'None' },
 };

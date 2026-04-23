@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-apex-cyan: #00E5FF;
+  --color-apex-navy: #0A1628;
+  --color-apex-dark: #050B14;
+  
+  --font-sans: "Inter", "sans-serif";
+  --font-mono: "JetBrains Mono", "monospace";
+}
+
+@layer base {
+  body {
+    @apply bg-apex-dark text-white font-sans;
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-apex-navy/50 backdrop-blur-md border border-white/10 rounded-lg p-4;
+  }
+}

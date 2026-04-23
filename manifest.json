@@ -49,6 +49,14 @@
         ]
       }
     ],
+    "hotkeys": {
+      "toggle_overlay": {
+        "title": "Toggle Overlay",
+        "action-type": "toggle",
+        "default": "Shift+F1",
+        "passthrough": true
+      }
+    },
     "launch_events": [
       {
         "event": "GameLaunch",

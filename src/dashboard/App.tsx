@@ -1,4 +1,7 @@
 import React, { useState } from 'react';
+import { useAuthStore } from '../stores/authStore';
+import LoginPage from './pages/LoginPage';
+import LinkAccountPage from './pages/LinkAccountPage';
 import HomePage from './pages/HomePage';
 import StatsPage from './pages/StatsPage';
 import WeaponsPage from './pages/WeaponsPage';
@@ -22,7 +25,49 @@ const PAGE_COMPONENTS: Record<Page, React.FC> = {
 };
 
 const App: React.FC = () => {
+  const { setupComplete, completeSetup } = useAuthStore();
   const [activePage, setActivePage] = useState<Page>('Home');
+  const [onboardStep, setOnboardStep] = useState<'login' | 'link' | 'done'>(
+    setupComplete ? 'done' : 'login'
+  );
+
+  const handleLogin = (method: 'steam' | 'discord' | 'skip') => {
+    if (method === 'skip') {
+      completeSetup();
+      setOnboardStep('done');
+      return;
+    }
+
+    try {
+      const bgWindow = overwolf.windows.getMainWindow();
+      if (method === 'steam') {
+        (bgWindow as unknown as { loginSteam?: () => void }).loginSteam?.();
+      } else {
+        (bgWindow as unknown as { loginDiscord?: () => void }).loginDiscord?.();
+      }
+    } catch { /* not in Overwolf */ }
+
+    setOnboardStep('link');
+  };
+
+  const handleLinked = () => {
+    completeSetup();
+    setOnboardStep('done');
+  };
+
+  const handleSkipLink = () => {
+    completeSetup();
+    setOnboardStep('done');
+  };
+
+  if (onboardStep === 'login') {
+    return <LoginPage onLogin={handleLogin} onManualLink={() => setOnboardStep('link')} />;
+  }
+
+  if (onboardStep === 'link') {
+    return <LinkAccountPage onLinked={handleLinked} onSkip={handleSkipLink} />;
+  }
+
   const ActiveComponent = PAGE_COMPONENTS[activePage];
 
   return (

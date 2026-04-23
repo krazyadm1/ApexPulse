@@ -8,6 +8,7 @@ import {
   onMatchEnd,
 } from './match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from './session-manager';
+import { processRoster, clearLobby } from './lobby-intel';
 import { setApiKey, getPlayerStats, getMapRotation } from './api-client';
 import { setupMessageListener, broadcastMatchHistory, broadcastProfile, broadcastMapRotation, broadcastSession, onMessage } from './messaging';
 import { initAuth, handlePlayerDetected, broadcastCurrentAuthState, loginSteam, loginDiscord, linkOriginManual, handleSteamCallback, handleDiscordCallback } from './auth/auth-manager';
@@ -54,7 +55,9 @@ class BackgroundController {
       onInventoryUpdate: handleInventoryUpdate,
       onLocationUpdate: () => {},
       onMatchSummary: handleMatchSummary,
-      onRosterUpdate: () => {},
+      onRosterUpdate: (players) => {
+        processRoster(players);
+      },
       onPlayerNameDetected: async (name: string) => {
         setPlayerName(name);
         await handlePlayerDetected(name);
@@ -67,11 +70,13 @@ class BackgroundController {
 
     onMatchEnd((match) => {
       onMatchPlayed(match);
+      clearLobby();
       this.broadcastFullState();
     });
 
     this.startPolling(settings.apiKey ? API_POLL_INTERVAL_MS : 0);
     this.openDashboard();
+    this.registerHotkeys();
 
     console.log('[ApexPulse] Initialization complete');
   }
@@ -130,6 +135,26 @@ class BackgroundController {
 
     poll();
     pollTimer = setInterval(poll, intervalMs);
+  }
+
+  private registerHotkeys(): void {
+    overwolf.settings.hotkeys.onPressed.addListener((event: overwolf.settings.hotkeys.OnPressedEvent) => {
+      if (event.name === 'toggle_overlay') {
+        this.toggleOverlay();
+      }
+    });
+  }
+
+  private toggleOverlay(): void {
+    overwolf.windows.obtainDeclaredWindow('overlay', (result) => {
+      if (!result.success) return;
+      const windowId = result.window.id;
+      if (result.window.isVisible) {
+        overwolf.windows.hide(windowId, () => {});
+      } else {
+        overwolf.windows.restore(windowId, () => {});
+      }
+    });
   }
 
   private openDashboard(): void {

@@ -114,3 +114,7 @@ export function broadcastSession<T>(payload: T): void {
 export function broadcastOriginDetected(name: string, uid: string): void {
   broadcast({ type: 'ORIGIN_DETECTED', payload: { name, uid }, timestamp: Date.now() });
 }
+
+export function broadcastLobbyIntel<T>(payload: T): void {
+  broadcast({ type: 'LOBBY_INTEL_UPDATE', payload, timestamp: Date.now() });
+}

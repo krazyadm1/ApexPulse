@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { LiveMatchData, TrackerState, WindowMessage } from '../shared/types';
+import { LiveMatchData, TrackerState, WindowMessage, LobbyPlayer } from '../shared/types';
 import { onMessage, setupRendererListener } from '../background/messaging';
 
 interface LiveState {
@@ -18,6 +18,7 @@ interface LiveState {
   inventory: string[];
   placement: number | null;
   isLive: boolean;
+  lobbyPlayers: LobbyPlayer[];
   init: () => void;
 }
 
@@ -37,6 +38,7 @@ export const useLiveStore = create<LiveState>((set) => ({
   inventory: [],
   placement: null,
   isLive: false,
+  lobbyPlayers: [],
 
   init: () => {
     setupRendererListener();
@@ -61,8 +63,13 @@ export const useLiveStore = create<LiveState>((set) => ({
       });
     });
 
+    onMessage('LOBBY_INTEL_UPDATE', (msg: WindowMessage) => {
+      const players = msg.payload as LobbyPlayer[];
+      set({ lobbyPlayers: players });
+    });
+
     onMessage('MATCH_ENDED', () => {
-      set({ isLive: false, matchState: 'idle' });
+      set({ isLive: false, matchState: 'idle', lobbyPlayers: [] });
     });
   },
 }));

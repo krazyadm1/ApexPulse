@@ -322,7 +322,8 @@ export type MessageType =
   | 'SETTINGS_UPDATE'
   | 'SESSION_UPDATE'
   | 'ORIGIN_DETECTED'
-  | 'REQUEST_STATE';
+  | 'REQUEST_STATE'
+  | 'LOBBY_INTEL_UPDATE';
 
 export interface WindowMessage<T = unknown> {
   type: MessageType;
@@ -375,4 +376,20 @@ export interface UserAccount {
   discordId: string | null;
   discordName: string | null;
   discordAvatar: string | null;
+}
+
+// === Lobby Intel Types ===
+
+export interface LobbyPlayer {
+  name: string;
+  platform: string;
+  teamId: number;
+  isTeammate: boolean;
+  level?: number;
+  rankName?: string;
+  rankScore?: number;
+  kills?: number;
+  kd?: number;
+  selectedLegend?: string;
+  loaded: boolean;
 }

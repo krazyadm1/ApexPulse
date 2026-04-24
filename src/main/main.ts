@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen, shell } from 'electron';
 import path from 'path';
 import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, setUserDataPath } from '../background/database';
 import { initGep, registerCallbacks, cleanup as cleanupGep } from '../background/gep-manager';
@@ -187,6 +187,10 @@ function registerHotkeys(): void {
 function setupIpcHandlers(): void {
   ipcMain.on('request-state', () => {
     broadcastFullState();
+  });
+
+  ipcMain.on('launch-apex', () => {
+    shell.openExternal('steam://rungameid/1172470');
   });
 
   ipcMain.on('login-steam', () => {

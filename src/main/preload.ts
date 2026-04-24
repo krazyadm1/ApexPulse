@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('apexPulse', {
   send: (channel: string, data?: unknown) => {
     const validChannels = [
       'request-state',
+      'launch-apex',
       'login-steam',
       'login-discord',
       'link-origin-manual',

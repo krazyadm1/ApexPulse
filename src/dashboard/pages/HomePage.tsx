@@ -18,6 +18,15 @@ const HomePage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center space-x-4">
+          <button
+            onClick={() => {
+              const api = (window as unknown as { apexPulse?: { send: (ch: string) => void } }).apexPulse;
+              if (api) api.send('launch-apex');
+            }}
+            className="bg-apex-cyan text-apex-dark font-bold px-5 py-2 rounded-lg hover:opacity-90 transition-colors"
+          >
+            Launch Apex
+          </button>
           <div className="bg-apex-navy px-4 py-2 rounded-lg border border-white/10">
             <span className="text-gray-400 text-sm">Status:</span>
             <span className={`ml-2 font-medium ${isLive ? 'text-green-400' : 'text-gray-500'}`}>

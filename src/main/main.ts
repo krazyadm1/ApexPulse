@@ -248,7 +248,7 @@ async function initApp(): Promise<void> {
   setupIpcHandlers();
   patchMessaging();
 
-  await initPackDetector();
+  try { await initPackDetector(); } catch (e) { console.warn('[ApexPulse] Pack detector init failed:', e); }
   registerPackCallbacks({
     onPacksOpened: (count, newTotal) => {
       broadcast('pack-update', { count: newTotal, justOpened: count });

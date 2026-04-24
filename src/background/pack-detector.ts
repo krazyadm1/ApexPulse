@@ -22,14 +22,21 @@ export function registerPackCallbacks(cbs: PackEventCallback): void {
 }
 
 export async function initPackDetector(): Promise<void> {
-  ocrWorker = await Tesseract.createWorker('eng', 1, {
-    logger: () => {},
-  });
-  await ocrWorker.setParameters({
-    tessedit_char_whitelist: '0123456789xX/',
-    tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
-  });
-  console.log('[PackDetector] OCR worker initialized');
+  try {
+    const workerPath = require.resolve('tesseract.js/src/worker-script/node/index.js');
+    ocrWorker = await Tesseract.createWorker('eng', 1, {
+      workerPath,
+      logger: () => {},
+    });
+    await ocrWorker.setParameters({
+      tessedit_char_whitelist: '0123456789xX/',
+      tessedit_pageseg_mode: Tesseract.PSM.SINGLE_LINE,
+    });
+    console.log('[PackDetector] OCR worker initialized');
+  } catch (error) {
+    console.warn('[PackDetector] OCR init failed — pack detection disabled:', error);
+    ocrWorker = null;
+  }
 }
 
 export function startScanning(): void {

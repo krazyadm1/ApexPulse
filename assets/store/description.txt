@@ -1,0 +1,16 @@
+SHORT DESCRIPTION (max 150 chars):
+Real-time Apex Legends match tracking with live overlay, detailed weapon stats, and heirloom pack counter.
+
+LONG DESCRIPTION:
+ApexPulse is the Apex Legends companion that works. Track every match automatically with GEP-powered game event detection — kills, damage, placement, weapons, and legends are all captured in real-time.
+
+Features:
+- Live in-game overlay showing current match stats
+- Detailed match history with per-weapon and per-legend breakdowns
+- Real-time map rotation and server status
+- Heirloom pack tracker with auto-detection
+- Lobby intel with player stats lookup
+- Session tracking to monitor your daily performance
+- All data stored locally — your stats never leave your machine
+
+Supports Steam and Discord sign-in, or just launch Apex and we'll detect your account automatically.

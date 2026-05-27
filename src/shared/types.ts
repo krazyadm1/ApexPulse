@@ -324,7 +324,8 @@ export type MessageType =
   | 'ORIGIN_DETECTED'
   | 'REQUEST_STATE'
   | 'LOBBY_INTEL_UPDATE'
-  | 'PACK_UPDATE';
+  | 'PACK_UPDATE'
+  | 'GAME_RUNNING_UPDATE';
 
 export interface WindowMessage<T = unknown> {
   type: MessageType;
@@ -355,6 +356,7 @@ export interface AppSettings {
   autoDetectOrigin: boolean;
   pollIntervalMs: number;
   sessionTimeoutMs: number;
+  consentAccepted: boolean;
 }
 
 // === Auth Types ===

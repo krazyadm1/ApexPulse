@@ -40,6 +40,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         autoDetectOrigin: updated.autoDetectOrigin,
         pollIntervalMs: updated.pollIntervalMs,
         sessionTimeoutMs: updated.sessionTimeoutMs,
+        consentAccepted: updated.consentAccepted,
       }));
       return partial;
     });

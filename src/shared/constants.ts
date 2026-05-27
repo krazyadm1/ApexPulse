@@ -26,6 +26,11 @@ export const API_POLL_INTERVAL_MS = 120_000;
 export const API_RATE_LIMIT_MS = 500;
 export const DB_SAVE_INTERVAL_MS = 30_000;
 
+export const LEGAL_URLS = {
+  termsOfUse: 'https://apexpulse.gg/terms',
+  privacyPolicy: 'https://apexpulse.gg/privacy',
+} as const;
+
 export const DEFAULT_SETTINGS: import('./types').AppSettings = {
   apiKey: '',
   overlayEnabled: true,
@@ -35,6 +40,7 @@ export const DEFAULT_SETTINGS: import('./types').AppSettings = {
   autoDetectOrigin: true,
   pollIntervalMs: API_POLL_INTERVAL_MS,
   sessionTimeoutMs: SESSION_TIMEOUT_MS,
+  consentAccepted: false,
 };
 
 export const WINDOW_NAMES = {

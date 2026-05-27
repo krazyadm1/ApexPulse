@@ -5,11 +5,12 @@
   "main": "dist/main.js",
   "scripts": {
     "build": "webpack",
+    "build:prod": "cross-env NODE_ENV=production webpack",
     "start": "ow-electron dist/main.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder"
   },
-  "author": "Campers Construction LLC",
+  "author": "krazyadm",
   "license": "ISC",
   "dependencies": {
     "@overwolf/ow-electron": "^39.6.1",
@@ -29,6 +30,7 @@
     "@types/react-dom": "^19.2.3",
     "autoprefixer": "^10.5.0",
     "copy-webpack-plugin": "^14.0.0",
+    "cross-env": "^10.1.0",
     "css-loader": "^7.1.4",
     "electron-builder": "^26.8.1",
     "html-webpack-plugin": "^5.6.7",
@@ -44,8 +46,28 @@
   "build": {
     "appId": "com.campersconstruction.apexpulse",
     "productName": "ApexPulse",
+    "electronDist": "node_modules/@overwolf/ow-electron/dist",
+    "electronVersion": "39.6.1",
     "files": [
-      "dist/**/*"
+      "dist/**/*",
+      "node_modules/better-sqlite3/**/*",
+      "node_modules/bindings/**/*",
+      "node_modules/file-uri-to-path/**/*",
+      "node_modules/prebuild-install/**/*",
+      "node_modules/tesseract.js/**/*",
+      "node_modules/tesseract.js-core/**/*",
+      "node_modules/bmp-js/**/*",
+      "node_modules/is-url/**/*",
+      "node_modules/node-fetch/**/*",
+      "node_modules/regenerator-runtime/**/*",
+      "node_modules/wasm-feature-detect/**/*",
+      "node_modules/zlibjs/**/*",
+      "node_modules/idb-keyval/**/*"
+    ],
+    "asarUnpack": [
+      "node_modules/better-sqlite3/**/*",
+      "node_modules/tesseract.js/**/*",
+      "node_modules/tesseract.js-core/**/*"
     ],
     "win": {
       "target": "nsis",

@@ -2,8 +2,10 @@ const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 
+const isProd = process.env.NODE_ENV === 'production';
+
 const mainConfig = {
-  mode: 'development',
+  mode: isProd ? 'production' : 'development',
   target: 'electron-main',
   entry: { main: './src/main/main.ts' },
   output: {
@@ -20,13 +22,14 @@ const mainConfig = {
   externals: {
     'better-sqlite3': 'commonjs better-sqlite3',
     '@overwolf/ow-electron': 'commonjs @overwolf/ow-electron',
+    'tesseract.js': 'commonjs tesseract.js',
   },
   node: { __dirname: false, __filename: false },
-  devtool: 'source-map',
+  devtool: isProd ? false : 'source-map',
 };
 
 const preloadConfig = {
-  mode: 'development',
+  mode: isProd ? 'production' : 'development',
   target: 'electron-preload',
   entry: { preload: './src/main/preload.ts' },
   output: {
@@ -37,11 +40,11 @@ const preloadConfig = {
     rules: [{ test: /\.ts$/, use: 'ts-loader', exclude: /node_modules/ }],
   },
   resolve: { extensions: ['.ts', '.js'] },
-  devtool: 'source-map',
+  devtool: isProd ? false : 'source-map',
 };
 
 const rendererConfig = {
-  mode: 'development',
+  mode: isProd ? 'production' : 'development',
   target: 'web',
   entry: {
     dashboard: './src/dashboard/index.tsx',
@@ -78,7 +81,7 @@ const rendererConfig = {
       ],
     }),
   ],
-  devtool: 'source-map',
+  devtool: isProd ? false : 'source-map',
 };
 
 module.exports = [mainConfig, preloadConfig, rendererConfig];

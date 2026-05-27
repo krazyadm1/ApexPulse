@@ -266,6 +266,20 @@ function checkIfApexRunning(): void {
   });
 }
 
+async function initCmp(): Promise<void> {
+  try {
+    const owApp = app as any;
+    if (!owApp.overwolf) return;
+
+    const required = await owApp.overwolf.isCMPRequired();
+    if (required) {
+      await owApp.overwolf.openCMPWindow();
+    }
+  } catch (e) {
+    console.warn('[ApexPulse] CMP init failed:', e);
+  }
+}
+
 async function initApp(): Promise<void> {
   console.log('[ApexPulse] Initializing...');
 
@@ -364,6 +378,7 @@ async function initApp(): Promise<void> {
   startPolling(settings.apiKey ? API_POLL_INTERVAL_MS : 0);
   registerHotkeys();
 
+  await initCmp();
   createDashboardWindow();
   createOverlayWindow();
   checkIfApexRunning();

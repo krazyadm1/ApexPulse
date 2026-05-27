@@ -8,7 +8,8 @@
     "build:prod": "cross-env NODE_ENV=production webpack",
     "start": "ow-electron dist/main.js",
     "pack": "electron-builder --dir",
-    "dist": "electron-builder"
+    "dist": "electron-builder",
+    "dist:signed": "electron-builder --win --publish never"
   },
   "author": "krazyadm",
   "license": "ISC",
@@ -71,7 +72,9 @@
     ],
     "win": {
       "target": "nsis",
-      "icon": "assets/icons/icon.png"
+      "icon": "assets/icons/icon.png",
+      "signingHashAlgorithms": ["sha256"],
+      "sign": null
     },
     "nsis": {
       "oneClick": true,

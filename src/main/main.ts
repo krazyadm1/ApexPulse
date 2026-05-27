@@ -1,7 +1,8 @@
 import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen, shell } from 'electron';
+import { execFile } from 'child_process';
 import path from 'path';
 import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, setUserDataPath } from '../background/database';
-import { initGep, registerCallbacks, cleanup as cleanupGep } from '../background/gep-manager';
+import { initGep, registerCallbacks, onGameRunningChange, cleanup as cleanupGep } from '../background/gep-manager';
 import {
   setPlayerName, handleMatchStateChange, handleKillFeed, handleKill,
   handleAssist, handleDamage, handleKnockdown, handleDeath, handleRevive,
@@ -21,6 +22,7 @@ import { AppSettings } from '../shared/types';
 let dashboardWindow: BrowserWindow | null = null;
 let overlayWindow: BrowserWindow | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
+let currentGameMode: string | null = null;
 
 function createDashboardWindow(): void {
   dashboardWindow = new BrowserWindow({
@@ -40,7 +42,10 @@ function createDashboardWindow(): void {
   });
 
   dashboardWindow.loadFile(path.join(__dirname, 'dashboard.html'));
-
+  (dashboardWindow as any).webContents.setWindowOpenHandler(({ url }: { url: string }) => {
+    shell.openExternal(url);
+    return { action: 'deny' };
+  });
   dashboardWindow.on('closed', () => {
     dashboardWindow = null;
   });
@@ -71,7 +76,7 @@ function createOverlayWindow(): void {
   });
 
   overlayWindow.loadFile(path.join(__dirname, 'overlay.html'));
-  overlayWindow.setIgnoreMouseEvents(true, { forward: true });
+  overlayWindow.setIgnoreMouseEvents(true);
 
   overlayWindow.on('moved', () => {
     if (overlayWindow) {
@@ -187,6 +192,7 @@ function registerHotkeys(): void {
 function setupIpcHandlers(): void {
   ipcMain.on('request-state', () => {
     broadcastFullState();
+    checkIfApexRunning();
   });
 
   ipcMain.on('launch-apex', () => {
@@ -233,6 +239,33 @@ function patchMessaging(): void {
   });
 }
 
+function logToRenderer(msg: string): void {
+  try {
+    (dashboardWindow as any)?.webContents?.executeJavaScript(`console.log('[MAIN] ${msg.replace(/'/g, "\\'").replace(/\\/g, '\\\\')}')`);
+  } catch { /* ignore */ }
+}
+
+function checkIfApexRunning(): void {
+  logToRenderer('Checking if Apex is already running...');
+  execFile('tasklist', ['/FI', 'IMAGENAME eq r5apex.exe', '/FO', 'CSV', '/NH'], (err, stdout) => {
+    logToRenderer('tasklist r5apex.exe: ' + (err ? err.message : stdout.trim()));
+    if (!err && stdout.includes('r5apex')) {
+      logToRenderer('Apex detected (DX11)');
+      broadcast('game-running-update', { running: true });
+      return;
+    }
+    execFile('tasklist', ['/FI', 'IMAGENAME eq r5apex_dx12.exe', '/FO', 'CSV', '/NH'], (err2, stdout2) => {
+      logToRenderer('tasklist r5apex_dx12.exe: ' + (err2 ? err2.message : stdout2.trim()));
+      if (!err2 && stdout2.includes('r5apex_dx12')) {
+        logToRenderer('Apex detected (DX12)');
+        broadcast('game-running-update', { running: true });
+      } else {
+        logToRenderer('Apex not detected');
+      }
+    });
+  });
+}
+
 async function initApp(): Promise<void> {
   console.log('[ApexPulse] Initializing...');
 
@@ -268,6 +301,11 @@ async function initApp(): Promise<void> {
       handleMatchStateChange(state);
       if (state === 'active') {
         stopScanning();
+        const isRanked = currentGameMode === 'ranked_br';
+        if (isRanked && overlayWindow?.isVisible()) {
+          overlayWindow.hide();
+          broadcast('overlay-auto-hidden', { reason: 'ranked' });
+        }
       } else {
         startScanning();
       }
@@ -290,11 +328,31 @@ async function initApp(): Promise<void> {
       setPlayerName(name);
       await handlePlayerDetected(name);
     },
-    onGameModeDetected: handleGameModeDetected,
+    onGameModeDetected: (mode: string) => {
+      handleGameModeDetected(mode);
+      currentGameMode = mode;
+    },
     onMapDetected: handleMapDetected,
     onLegendDetected: handleLegendDetected,
   });
+  onGameRunningChange((running) => {
+    logToRenderer('GEP game running change: ' + running);
+    broadcast('game-running-update', { running });
+  });
+
   initGep();
+
+  // Log GEP package events to renderer once windows exist
+  const owApp2 = app as any;
+  if (owApp2.overwolf?.packages) {
+    const pkgs = owApp2.overwolf.packages;
+    pkgs.on('ready', (_e: any, name: string, ver: string) => {
+      logToRenderer('Package ready: ' + name + ' v' + ver);
+    });
+    pkgs.on('failed-to-initialize', (_e: any, name: string) => {
+      logToRenderer('Package FAILED: ' + name);
+    });
+  }
 
   onMatchEnd((match) => {
     onMatchPlayed(match);
@@ -308,9 +366,23 @@ async function initApp(): Promise<void> {
 
   createDashboardWindow();
   createOverlayWindow();
+  checkIfApexRunning();
+
+  // Log GEP status to renderer after window is ready
+  const owApp = app as any;
+  const gepStatus = {
+    overwolf: !!owApp.overwolf,
+    packages: !!owApp.overwolf?.packages,
+    gep: !!owApp.overwolf?.packages?.gep,
+  };
+  setTimeout(() => {
+    logToRenderer('GEP status: ' + JSON.stringify(gepStatus));
+  }, 2000);
 
   console.log('[ApexPulse] Initialization complete');
 }
+
+(app as any).commandLine.appendSwitch('owepm-packages-url', 'https://electronapi-qa.overwolf.com/packages');
 
 app.whenReady().then(initApp);
 

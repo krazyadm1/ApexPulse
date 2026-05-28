@@ -17,6 +17,7 @@ import { getOriginName } from '../background/auth/origin-resolver';
 import { processRoster, clearLobby } from '../background/lobby-intel';
 import { initPackDetector, startScanning, stopScanning, registerPackCallbacks, cleanupPackDetector } from '../background/pack-detector';
 import { API_POLL_INTERVAL_MS } from '../shared/constants';
+import { parseGameMode } from '../shared/utils';
 import { AppSettings } from '../shared/types';
 
 let dashboardWindow: BrowserWindow | null = null;
@@ -344,7 +345,7 @@ async function initApp(): Promise<void> {
     },
     onGameModeDetected: (mode: string) => {
       handleGameModeDetected(mode);
-      currentGameMode = mode;
+      currentGameMode = parseGameMode(mode);
     },
     onMapDetected: handleMapDetected,
     onLegendDetected: handleLegendDetected,

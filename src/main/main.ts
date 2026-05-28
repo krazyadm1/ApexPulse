@@ -120,6 +120,10 @@ function broadcast(channel: string, data: unknown): void {
   overlayWindow?.webContents.send(channel, data);
 }
 
+function broadcastError(code: string, message: string): void {
+  broadcast('app-error', { code, message, timestamp: Date.now() });
+}
+
 function loadSettings(): AppSettings & Record<string, string> {
   try {
     const settingsPath = path.join(app.getPath('userData'), 'settings.json');
@@ -170,13 +174,21 @@ function startPolling(intervalMs: number): void {
     const originName = getOriginName();
     if (!originName) return;
 
-    const stats = await getPlayerStats(originName);
-    if (stats) broadcast('profile-update', stats);
+    try {
+      const stats = await getPlayerStats(originName);
+      if (stats) broadcast('profile-update', stats);
+    } catch {
+      broadcastError('api_stats', 'Could not fetch player stats. Check your API key and connection.');
+    }
 
-    const maps = await getMapRotation();
-    const servers = await getServerStatus();
-    const serversOnline = servers ? Object.values(servers).every(r => r.Status === 'UP') : true;
-    if (maps) broadcast('map-rotation-update', { rotation: maps, serversOnline });
+    try {
+      const maps = await getMapRotation();
+      const servers = await getServerStatus();
+      const serversOnline = servers ? Object.values(servers).every(r => r.Status === 'UP') : true;
+      if (maps) broadcast('map-rotation-update', { rotation: maps, serversOnline });
+    } catch {
+      broadcastError('api_maps', 'Could not fetch map rotation. Will retry shortly.');
+    }
   };
 
   poll();
@@ -407,6 +419,9 @@ async function initApp(): Promise<void> {
   };
   setTimeout(() => {
     logToRenderer('GEP status: ' + JSON.stringify(gepStatus));
+    if (!gepStatus.gep) {
+      broadcastError('gep_unavailable', 'Game events not available. Live tracking requires the Overwolf platform.');
+    }
   }, 2000);
 
   console.log('[ApexPulse] Initialization complete');

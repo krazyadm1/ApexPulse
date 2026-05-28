@@ -34,6 +34,17 @@ const App: React.FC = () => {
   const [onboardStep, setOnboardStep] = useState<'consent' | 'login' | 'link' | 'apikey' | 'done'>(
     setupComplete ? 'done' : 'consent'
   );
+  const [errorToast, setErrorToast] = useState<string | null>(null);
+
+  React.useEffect(() => {
+    const api = (window as unknown as { apexPulse?: { on: (ch: string, cb: (...args: unknown[]) => void) => void } }).apexPulse;
+    if (!api) return;
+    api.on('app-error', (data: unknown) => {
+      const err = data as { message: string };
+      setErrorToast(err.message);
+      setTimeout(() => setErrorToast(null), 8000);
+    });
+  }, []);
 
   const handleConsent = () => {
     const api = (window as unknown as { apexPulse?: { send: (ch: string, data?: unknown) => void } }).apexPulse;
@@ -94,6 +105,13 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-apex-dark text-white">
+      {errorToast && (
+        <div className="fixed top-4 right-4 z-50 max-w-sm bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg px-4 py-3 flex items-start gap-3 shadow-lg">
+          <span className="shrink-0 mt-0.5">!</span>
+          <span>{errorToast}</span>
+          <button onClick={() => setErrorToast(null)} className="shrink-0 text-red-400/60 hover:text-red-400 ml-auto">&times;</button>
+        </div>
+      )}
       <aside className="w-64 bg-apex-navy border-r border-white/10 flex flex-col">
         <div className="p-6 flex items-center space-x-3 cursor-pointer" onClick={() => setActivePage('Home')}>
           <img src="./assets/icons/icon.png" alt="ApexPulse" className="w-10 h-10" />

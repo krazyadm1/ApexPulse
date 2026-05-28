@@ -31,6 +31,9 @@ contextBridge.exposeInMainWorld('apexPulse', {
       'origin-detected',
       'lobby-intel-update',
       'pack-update',
+      'game-running-update',
+      'app-error',
+      'overlay-auto-hidden',
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.on(channel, (_event, ...args) => callback(...args));

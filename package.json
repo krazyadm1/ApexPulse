@@ -79,7 +79,9 @@
     },
     "nsis": {
       "oneClick": true,
-      "allowToChangeInstallationDirectory": false
+      "allowToChangeInstallationDirectory": false,
+      "uninstallDisplayName": "ApexPulse",
+      "include": "build/uninstaller.nsh"
     }
   }
 }

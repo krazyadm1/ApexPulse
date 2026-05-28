@@ -53,16 +53,20 @@ function createDashboardWindow(): void {
 }
 
 function createOverlayWindow(): void {
+  const displays = screen.getAllDisplays();
   const primaryDisplay = screen.getPrimaryDisplay();
-  const { width: screenW } = primaryDisplay.workAreaSize;
+  const secondaryDisplay = displays.find(d => d.id !== primaryDisplay.id);
+
+  const targetDisplay = secondaryDisplay ?? primaryDisplay;
+  const bounds = targetDisplay.workArea;
 
   const savedPos = loadOverlayPosition();
 
   overlayWindow = new BrowserWindow({
     width: 400,
     height: 600,
-    x: savedPos?.x ?? screenW - 420,
-    y: savedPos?.y ?? 10,
+    x: savedPos?.x ?? bounds.x + bounds.width - 420,
+    y: savedPos?.y ?? bounds.y + 10,
     frame: false,
     transparent: true,
     alwaysOnTop: true,

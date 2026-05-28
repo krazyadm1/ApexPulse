@@ -44,7 +44,8 @@ declare module 'electron' {
     getSources: (options: Record<string, unknown>) => Promise<Array<{ thumbnail: { toDataURL: () => string } }>>;
   };
   export const screen: {
-    getPrimaryDisplay: () => { workAreaSize: { width: number; height: number } };
+    getPrimaryDisplay: () => { id: number; workAreaSize: { width: number; height: number }; workArea: { x: number; y: number; width: number; height: number } };
+    getAllDisplays: () => Array<{ id: number; workAreaSize: { width: number; height: number }; workArea: { x: number; y: number; width: number; height: number } }>;
   };
   export const shell: {
     openExternal: (url: string) => Promise<void>;

@@ -7,6 +7,7 @@
     "build": "webpack",
     "build:prod": "cross-env NODE_ENV=production webpack",
     "start": "ow-electron dist/main.js",
+    "start:dev": "cross-env OW_DEV=true ow-electron dist/main.js",
     "pack": "electron-builder --dir",
     "dist": "electron-builder",
     "dist:signed": "electron-builder --win --publish never"

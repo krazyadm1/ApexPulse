@@ -398,7 +398,9 @@ async function initApp(): Promise<void> {
   console.log('[ApexPulse] Initialization complete');
 }
 
-(app as any).commandLine.appendSwitch('owepm-packages-url', 'https://electronapi-qa.overwolf.com/packages');
+if (process.env.OW_DEV === 'true') {
+  (app as any).commandLine.appendSwitch('owepm-packages-url', 'https://electronapi-qa.overwolf.com/packages');
+}
 
 app.whenReady().then(initApp);
 

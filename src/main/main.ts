@@ -184,7 +184,12 @@ function startPolling(intervalMs: number): void {
 }
 
 function registerHotkeys(): void {
-  globalShortcut.register('Shift+F1', () => {
+  const settings = loadSettings();
+  const hotkey = settings.overlayHotkey || 'Shift+F1';
+
+  globalShortcut.unregisterAll();
+
+  globalShortcut.register(hotkey, () => {
     if (!overlayWindow) return;
     if (overlayWindow.isVisible()) {
       overlayWindow.hide();
@@ -192,6 +197,8 @@ function registerHotkeys(): void {
       overlayWindow.show();
     }
   });
+
+  console.log(`[ApexPulse] Hotkey registered: ${hotkey}`);
 }
 
 function setupIpcHandlers(): void {
@@ -228,6 +235,9 @@ function setupIpcHandlers(): void {
       startPolling(settings.pollIntervalMs ?? API_POLL_INTERVAL_MS);
     }
     broadcast('settings-update', settings);
+    if (settings.overlayHotkey !== undefined) {
+      registerHotkeys();
+    }
   });
 
   ipcMain.on('set-pack-count', (_event: unknown, ...args: unknown[]) => {

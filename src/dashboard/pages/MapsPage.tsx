@@ -252,6 +252,15 @@ const MapsPage: React.FC = () => {
         </div>
       </header>
 
+      {/* ── No API data empty state ── */}
+      {!rotation && (
+        <div className="glass-card flex flex-col items-center justify-center py-16 text-center">
+          <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.4 }}>🗺️</div>
+          <p className="text-white font-mono font-semibold text-base" style={{ margin: '0 0 4px' }}>Map rotation unavailable</p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, margin: 0 }}>Add your API key in Settings to see map rotations, or check your connection.</p>
+        </div>
+      )}
+
       {/* ── Current Map Rotation (3-column grid) ── */}
       <section>
         <h3 className="text-base font-semibold text-gray-300 uppercase tracking-wider mb-4">

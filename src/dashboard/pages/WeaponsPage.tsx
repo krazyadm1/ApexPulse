@@ -317,6 +317,15 @@ export default function WeaponsPage() {
   return (
     <div style={{ padding: '24px 28px', minHeight: '100vh', background: '#050B14' }}>
 
+      {/* ── Empty State ── */}
+      {weaponStats.length === 0 && (
+        <div className="glass-card flex flex-col items-center justify-center py-16 text-center" style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.4 }}>🔫</div>
+          <p className="text-white font-mono font-semibold text-base" style={{ margin: '0 0 4px' }}>No weapon data yet</p>
+          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, margin: 0 }}>Play some matches and your weapon stats will appear here.</p>
+        </div>
+      )}
+
       {/* ── Header ── */}
       <div
         style={{

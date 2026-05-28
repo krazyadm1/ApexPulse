@@ -115,6 +115,18 @@ export async function nameToUid(
   }
 }
 
+// GEP event status check (Overwolf public endpoint)
+export async function getGepEventStatus(): Promise<Record<string, string> | null> {
+  try {
+    const response = await axios.get('https://game-events-status.overwolf.com/gamestatus/21566_prod', {
+      timeout: 5000,
+    });
+    return response.data;
+  } catch {
+    return null;
+  }
+}
+
 // Bulk player lookup — sequential with throttle per request
 export async function lookupMultiplePlayers(
   names: string[],

@@ -11,7 +11,7 @@ import {
   onMatchEnd,
 } from '../background/match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from '../background/session-manager';
-import { setApiKey, getPlayerStats, getMapRotation, getServerStatus } from '../background/api-client';
+import { setApiKey, getPlayerStats, getMapRotation, getServerStatus, getGepEventStatus } from '../background/api-client';
 import { initAuth, handlePlayerDetected, broadcastCurrentAuthState, loginSteam, loginDiscord, linkOriginManual, handleSteamCallback, handleDiscordCallback } from '../background/auth/auth-manager';
 import { getOriginName } from '../background/auth/origin-resolver';
 import { processRoster, clearLobby } from '../background/lobby-intel';
@@ -122,6 +122,20 @@ function broadcast(channel: string, data: unknown): void {
 
 function broadcastError(code: string, message: string): void {
   broadcast('app-error', { code, message, timestamp: Date.now() });
+}
+
+async function checkGepStatus(): Promise<void> {
+  try {
+    const status = await getGepEventStatus();
+    if (status && typeof status === 'object') {
+      const downFeatures = Object.entries(status)
+        .filter(([, v]) => typeof v === 'string' && v !== 'good' && v !== 'up')
+        .map(([k]) => k);
+      if (downFeatures.length > 0) {
+        broadcastError('gep_status', `Some game events may be unavailable: ${downFeatures.join(', ')}.`);
+      }
+    }
+  } catch { /* ignore */ }
 }
 
 function loadSettings(): AppSettings & Record<string, string> {
@@ -382,6 +396,8 @@ async function initApp(): Promise<void> {
   });
 
   initGep();
+  checkGepStatus();
+  setInterval(checkGepStatus, 5 * 60 * 1000);
 
   // Log GEP package events to renderer once windows exist
   const owApp2 = app as any;

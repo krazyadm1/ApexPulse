@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuthStore } from '../../stores/authStore';
 import { LEGAL_URLS } from '../../shared/constants';
+import Tooltip from '../components/Tooltip';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -206,9 +207,11 @@ export default function SettingsPage() {
       {/* ── API Configuration ── */}
       <SectionCard title="API Configuration">
         <div className="flex flex-col gap-2">
-          <label className="text-white/60 text-sm font-mono" htmlFor="api-key-input">
-            Apex Legends API Key
-          </label>
+          <Tooltip text="Free key from apexlegendsapi.com — enables profile stats and map rotations">
+            <label className="text-white/60 text-sm font-mono cursor-help border-b border-dotted border-white/20" htmlFor="api-key-input">
+              Apex Legends API Key
+            </label>
+          </Tooltip>
           <input
             id="api-key-input"
             type="text"

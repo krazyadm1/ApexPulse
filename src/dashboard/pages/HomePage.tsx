@@ -3,10 +3,11 @@ import { useMatchStore } from '../../stores/matchStore';
 import { useLiveStore } from '../../stores/liveStore';
 import { WEAPON_MAP } from '../../shared/weapon-map';
 import { LEGENDS } from '../../shared/legend-map';
+import Tooltip from '../components/Tooltip';
 
 const HomePage: React.FC = () => {
   const { recentMatches, totalKills, kdRatio, avgDamage, winRate, totalMatches } = useMatchStore();
-  const { isLive, kills: liveKills, damage: liveDamage, legend: liveLegend } = useLiveStore();
+  const { isLive, gameRunning, kills: liveKills, damage: liveDamage, legend: liveLegend } = useLiveStore();
 
   return (
     <>
@@ -18,15 +19,21 @@ const HomePage: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          <button
-            onClick={() => {
-              const api = (window as unknown as { apexPulse?: { send: (ch: string) => void } }).apexPulse;
-              if (api) api.send('launch-apex');
-            }}
-            className="bg-apex-cyan text-apex-dark font-bold px-5 py-2 rounded-lg hover:opacity-90 transition-colors"
-          >
-            Launch Apex
-          </button>
+          {gameRunning ? (
+            <div className="bg-green-500/20 text-green-400 font-bold px-5 py-2 rounded-lg border border-green-500/30">
+              Game Running
+            </div>
+          ) : (
+            <button
+              onClick={() => {
+                const api = (window as unknown as { apexPulse?: { send: (ch: string) => void } }).apexPulse;
+                if (api) api.send('launch-apex');
+              }}
+              className="bg-apex-cyan text-apex-dark font-bold px-5 py-2 rounded-lg hover:opacity-90 transition-colors"
+            >
+              Launch Apex
+            </button>
+          )}
           <div className="bg-apex-navy px-4 py-2 rounded-lg border border-white/10">
             <span className="text-gray-400 text-sm">Status:</span>
             <span className={`ml-2 font-medium ${isLive ? 'text-green-400' : 'text-gray-500'}`}>
@@ -53,9 +60,9 @@ const HomePage: React.FC = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <StatCard title="Total Kills" value={totalKills.toLocaleString()} />
-        <StatCard title="K/D Ratio" value={kdRatio.toFixed(2)} />
-        <StatCard title="Avg Damage" value={avgDamage.toLocaleString()} />
-        <StatCard title="Win Rate" value={`${winRate}%`} />
+        <StatCard title="K/D Ratio" value={kdRatio.toFixed(2)} tooltip="Total kills divided by total deaths" />
+        <StatCard title="Avg Damage" value={avgDamage.toLocaleString()} tooltip="Average damage dealt per match" />
+        <StatCard title="Win Rate" value={`${winRate}%`} tooltip="Percentage of matches where you placed #1" />
       </div>
 
       <section className="glass-card">
@@ -108,9 +115,15 @@ const HomePage: React.FC = () => {
   );
 };
 
-const StatCard: React.FC<{ title: string; value: string }> = ({ title, value }) => (
+const StatCard: React.FC<{ title: string; value: string; tooltip?: string }> = ({ title, value, tooltip }) => (
   <div className="glass-card">
-    <div className="text-gray-400 text-sm mb-1">{title}</div>
+    <div className="text-gray-400 text-sm mb-1">
+      {tooltip ? (
+        <Tooltip text={tooltip}><span className="cursor-help border-b border-dotted border-gray-600">{title}</span></Tooltip>
+      ) : (
+        title
+      )}
+    </div>
     <div className="text-3xl font-bold font-mono">{value}</div>
   </div>
 );

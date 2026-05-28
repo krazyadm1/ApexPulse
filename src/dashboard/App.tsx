@@ -12,6 +12,7 @@ import HistoryPage from './pages/HistoryPage';
 import MapsPage from './pages/MapsPage';
 import SettingsPage from './pages/SettingsPage';
 import FaqPage from './pages/FaqPage';
+import WelcomePage from './pages/WelcomePage';
 
 type Page = 'Home' | 'Stats' | 'Weapons' | 'Legends' | 'History' | 'Maps' | 'FAQ' | 'Settings';
 
@@ -31,7 +32,7 @@ const PAGE_COMPONENTS: Record<Page, React.FC> = {
 const App: React.FC = () => {
   const { setupComplete, completeSetup } = useAuthStore();
   const [activePage, setActivePage] = useState<Page>('Home');
-  const [onboardStep, setOnboardStep] = useState<'consent' | 'login' | 'link' | 'apikey' | 'done'>(
+  const [onboardStep, setOnboardStep] = useState<'consent' | 'welcome' | 'login' | 'link' | 'apikey' | 'done'>(
     setupComplete ? 'done' : 'consent'
   );
   const [errorToast, setErrorToast] = useState<string | null>(null);
@@ -49,8 +50,10 @@ const App: React.FC = () => {
   const handleConsent = () => {
     const api = (window as unknown as { apexPulse?: { send: (ch: string, data?: unknown) => void } }).apexPulse;
     if (api) api.send('update-settings', { consentAccepted: true });
-    setOnboardStep('login');
+    setOnboardStep('welcome');
   };
+
+  const handleWelcomeContinue = () => setOnboardStep('login');
 
   const handleLogin = (method: 'steam' | 'discord' | 'skip') => {
     if (method === 'skip') {
@@ -87,6 +90,10 @@ const App: React.FC = () => {
 
   if (onboardStep === 'consent') {
     return <ConsentPage onConsent={handleConsent} />;
+  }
+
+  if (onboardStep === 'welcome') {
+    return <WelcomePage onContinue={handleWelcomeContinue} />;
   }
 
   if (onboardStep === 'login') {

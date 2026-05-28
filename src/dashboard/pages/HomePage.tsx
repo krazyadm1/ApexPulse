@@ -4,6 +4,7 @@ import { useLiveStore } from '../../stores/liveStore';
 import { WEAPON_MAP } from '../../shared/weapon-map';
 import { LEGENDS } from '../../shared/legend-map';
 import Tooltip from '../components/Tooltip';
+import CoachMark from '../components/CoachMark';
 
 const HomePage: React.FC = () => {
   const { recentMatches, totalKills, kdRatio, avgDamage, winRate, totalMatches } = useMatchStore();
@@ -24,15 +25,17 @@ const HomePage: React.FC = () => {
               Game Running
             </div>
           ) : (
-            <button
-              onClick={() => {
-                const api = (window as unknown as { apexPulse?: { send: (ch: string) => void } }).apexPulse;
-                if (api) api.send('launch-apex');
-              }}
-              className="bg-apex-cyan text-apex-dark font-bold px-5 py-2 rounded-lg hover:opacity-90 transition-colors"
-            >
-              Launch Apex
-            </button>
+            <CoachMark id="launch" message="Click here to launch Apex Legends via Steam. Once running, ApexPulse tracks your matches automatically.">
+              <button
+                onClick={() => {
+                  const api = (window as unknown as { apexPulse?: { send: (ch: string) => void } }).apexPulse;
+                  if (api) api.send('launch-apex');
+                }}
+                className="bg-apex-cyan text-apex-dark font-bold px-5 py-2 rounded-lg hover:opacity-90 transition-colors"
+              >
+                Launch Apex
+              </button>
+            </CoachMark>
           )}
           <div className="bg-apex-navy px-4 py-2 rounded-lg border border-white/10">
             <span className="text-gray-400 text-sm">Status:</span>

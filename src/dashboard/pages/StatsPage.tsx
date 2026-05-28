@@ -12,6 +12,7 @@ import {
 } from 'recharts';
 import { useMatchStore } from '../../stores/matchStore';
 import { MatchRecord } from '../../shared/types';
+import CoachMark from '../components/CoachMark';
 
 // ─── Time Range ───────────────────────────────────────────────────────────────
 
@@ -244,21 +245,23 @@ const StatsPage: React.FC = () => {
         </div>
 
         {/* Time range selector */}
-        <div className="flex gap-2 bg-apex-navy rounded-xl p-1 border border-white border-opacity-10">
-          {(Object.keys(TIME_RANGE_LABELS) as TimeRange[]).map((range) => (
-            <button
-              key={range}
-              onClick={() => setTimeRange(range)}
-              className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
-                timeRange === range
-                  ? 'bg-apex-cyan bg-opacity-15 text-apex-cyan border border-apex-cyan border-opacity-40'
-                  : 'text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-5'
-              }`}
-            >
-              {TIME_RANGE_LABELS[range]}
-            </button>
-          ))}
-        </div>
+        <CoachMark id="timerange" message="Filter your stats by time period. Play a few matches to see trends in the charts.">
+          <div className="flex gap-2 bg-apex-navy rounded-xl p-1 border border-white border-opacity-10">
+            {(Object.keys(TIME_RANGE_LABELS) as TimeRange[]).map((range) => (
+              <button
+                key={range}
+                onClick={() => setTimeRange(range)}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  timeRange === range
+                    ? 'bg-apex-cyan bg-opacity-15 text-apex-cyan border border-apex-cyan border-opacity-40'
+                    : 'text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-5'
+                }`}
+              >
+                {TIME_RANGE_LABELS[range]}
+              </button>
+            ))}
+          </div>
+        </CoachMark>
       </header>
 
       {/* ── Overall Stats Cards ── */}

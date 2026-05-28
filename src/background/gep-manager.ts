@@ -1,3 +1,4 @@
+import { app } from 'electron';
 import { GepKillFeedEvent, GepMatchSummary, GepTeamMember, MatchState, GepRosterPlayer } from '../shared/types';
 import { normalizeWeaponName, normalizeLegendName } from '../shared/utils';
 
@@ -31,9 +32,16 @@ type GepEventCallback = {
   onLegendDetected: (legend: string) => void;
 };
 
+type GameRunningCallback = (running: boolean) => void;
+
 let callbacks: GepEventCallback | null = null;
 let retryCount = 0;
-let gepProvider: unknown = null;
+let gepPackage: any = null;
+let gameRunningCallback: GameRunningCallback | null = null;
+
+export function onGameRunningChange(cb: GameRunningCallback): void {
+  gameRunningCallback = cb;
+}
 
 export function registerCallbacks(cbs: GepEventCallback): void {
   callbacks = cbs;
@@ -48,149 +56,269 @@ function safeParse<T>(value: unknown): T | null {
   return null;
 }
 
-export function initGep(): void {
-  try {
-    // ow-electron exposes GEP via the overwolf-electron package
-    // Try to load the GEP provider
-    const { OverwolfPlugin } = require('@overwolf/ow-electron');
-    if (OverwolfPlugin && OverwolfPlugin.GameEventProvider) {
-      gepProvider = new OverwolfPlugin.GameEventProvider();
-      setupGepListeners(gepProvider as GepProviderLike);
-      setFeatures(gepProvider as GepProviderLike);
-    }
-  } catch {
-    // Fallback: try the global overwolf API (Overwolf client mode)
-    try {
-      if (typeof overwolf !== 'undefined' && overwolf && overwolf.games?.events) {
-        overwolf.games.events.onInfoUpdates2.addListener(handleInfoUpdate as (info: unknown) => void);
-        overwolf.games.events.onNewEvents.addListener(handleNewEvents as (events: unknown) => void);
-        setFeaturesOverwolf();
-      } else {
-        console.warn('[GEP] No GEP provider available — running without game events');
-      }
-    } catch {
-      console.warn('[GEP] GEP initialization failed — game events disabled');
-    }
+function platformHwToString(hw: number | undefined): string {
+  switch (hw) {
+    case 7: return 'PC/Steam';
+    case 2: return 'PC/Origin';
+    case 1: return 'PS';
+    case 9: return 'Switch';
+    case 0: return 'Xbox';
+    default: return 'PC';
   }
 }
 
-interface GepProviderLike {
-  on: (event: string, handler: (...args: unknown[]) => void) => void;
-  start: (config: { gameId: number; features: string[] }) => Promise<void>;
+const teammateBuffer = new Map<string, GepTeamMember>();
+const rosterBuffer = new Map<string, GepRosterPlayer>();
+let rosterFlushTimer: ReturnType<typeof setTimeout> | null = null;
+const ROSTER_DEBOUNCE_MS = 500;
+
+function flushRoster(): void {
+  if (!callbacks || rosterBuffer.size === 0) return;
+  callbacks.onRosterUpdate(Array.from(rosterBuffer.values()));
 }
 
-function setupGepListeners(provider: GepProviderLike): void {
-  provider.on('info', (info: unknown) => {
-    handleInfoUpdate(info as { feature: string; info: Record<string, unknown> });
+export function initGep(): void {
+  try {
+    const owApp = app as any;
+    const hasOw = !!owApp.overwolf;
+    const hasPkg = !!owApp.overwolf?.packages;
+    console.log(`[GEP] app.overwolf exists: ${hasOw}, packages exists: ${hasPkg}`);
+
+    const { BrowserWindow } = require('electron');
+    const wins = BrowserWindow.getAllWindows();
+    for (const w of wins) {
+      try {
+        (w as any).webContents?.executeJavaScript(
+          `console.log('[MAIN GEP] app.overwolf: ${hasOw}, packages: ${hasPkg}')`
+        );
+      } catch { /* ignore */ }
+    }
+
+    if (!owApp.overwolf?.packages) {
+      console.warn('[GEP] No Overwolf package manager available — running without game events');
+      return;
+    }
+
+    const packages = owApp.overwolf.packages;
+
+    // If GEP is already ready (loaded before we registered listeners)
+    if (packages.gep) {
+      console.log('[GEP] Package already available');
+      gepPackage = packages.gep;
+      setupGepListeners(gepPackage);
+    }
+
+    packages.on('ready', (_event: any, packageName: string, version: string) => {
+      console.log(`[GEP] Package ready: ${packageName} v${version}`);
+      if (packageName === 'gep') {
+        gepPackage = packages.gep;
+        setupGepListeners(gepPackage);
+      }
+    });
+
+    packages.on('failed-to-initialize', (_event: any, packageName: string) => {
+      console.error(`[GEP] Package failed to initialize: ${packageName}`);
+    });
+
+    packages.on('crashed', (_event: any, canRecover: boolean) => {
+      console.error(`[GEP] Package crashed, canRecover: ${canRecover}`);
+    });
+  } catch (error) {
+    console.warn('[GEP] GEP initialization failed:', error);
+  }
+}
+
+function setupGepListeners(gep: any): void {
+  gep.on('game-detected', (event: any, gameId: number, name: string) => {
+    if (gameId === APEX_GAME_ID) {
+      console.log(`[GEP] Apex Legends detected (${name})`);
+      event.enable();
+      setFeatures(gep);
+      gameRunningCallback?.(true);
+    }
   });
 
-  provider.on('event', (event: unknown) => {
-    const e = event as { events: Array<{ name: string; data: unknown }> };
-    if (e.events) {
-      handleNewEvents(e as { events: Array<{ name: string; data: unknown }> });
+  gep.on('new-info-update', (_event: any, gameId: number, data: any) => {
+    if (gameId !== APEX_GAME_ID) return;
+    handleInfoUpdate(data.feature, data.key, data.value);
+  });
+
+  gep.on('new-game-event', (_event: any, gameId: number, data: any) => {
+    if (gameId !== APEX_GAME_ID) return;
+    handleNewEvents({ events: [{ name: data.key, data: data.value }] });
+  });
+
+  gep.on('game-exit', (_event: any, gameId: number) => {
+    if (gameId === APEX_GAME_ID) {
+      console.log('[GEP] Apex Legends exited');
+      gameRunningCallback?.(false);
+      teammateBuffer.clear();
+      rosterBuffer.clear();
+    }
+  });
+
+  gep.on('error', (_event: any, gameId: number, error: string) => {
+    console.error(`[GEP] Error for game ${gameId}:`, error);
+  });
+
+  gep.on('elevated-privileges-required', (_event: any, gameId: number) => {
+    if (gameId === APEX_GAME_ID) {
+      console.warn('[GEP] Apex is running as admin — app must also run as admin for game events');
     }
   });
 }
 
-function setFeatures(provider: GepProviderLike): void {
-  provider.start({ gameId: APEX_GAME_ID, features: GEP_FEATURES })
+function setFeatures(gep: any): void {
+  gep.setRequiredFeatures(APEX_GAME_ID, GEP_FEATURES)
     .then(() => {
-      console.log('[GEP] Features set successfully via ow-electron');
+      console.log('[GEP] Features set successfully');
       retryCount = 0;
     })
     .catch((err: Error) => {
       console.warn('[GEP] Failed to set features:', err);
       if (retryCount < MAX_RETRIES) {
         retryCount++;
-        setTimeout(() => setFeatures(provider), RETRY_DELAY_MS);
+        setTimeout(() => setFeatures(gep), RETRY_DELAY_MS);
       }
     });
 }
 
-function setFeaturesOverwolf(): void {
-  if (typeof overwolf === 'undefined' || !overwolf) return;
-  overwolf.games.events.setRequiredFeatures(GEP_FEATURES, (result: { success: boolean }) => {
-    if (result.success) {
-      console.log('[GEP] Features set successfully via Overwolf');
-      retryCount = 0;
-    } else {
-      if (retryCount < MAX_RETRIES) {
-        retryCount++;
-        setTimeout(setFeaturesOverwolf, RETRY_DELAY_MS);
-      }
-    }
-  });
-}
-
-function handleInfoUpdate(info: { feature: string; info: Record<string, unknown> }): void {
+function handleInfoUpdate(feature: string, key: string, rawValue: unknown): void {
   if (!callbacks) return;
-  const { feature, info: data } = info;
 
   try {
     switch (feature) {
       case 'me': {
-        const meData = safeParse<{ name?: string }>(data.me ?? data);
-        if (meData?.name) callbacks.onPlayerNameDetected(meData.name);
-        else if (typeof data.me === 'string') callbacks.onPlayerNameDetected(data.me);
-        break;
-      }
-      case 'match_info': {
-        const tabs = safeParse<Record<string, number>>(data.tabs ?? data);
-        if (tabs) {
-          if (tabs.kills !== undefined) callbacks.onKill(Number(tabs.kills));
-          if (tabs.assists !== undefined) callbacks.onAssist(Number(tabs.assists));
-          if (tabs.damage !== undefined) callbacks.onDamage(Number(tabs.damage));
-          if (tabs.knockdowns !== undefined) callbacks.onKnockdown(Number(tabs.knockdowns));
+        if (key === 'name') {
+          if (typeof rawValue === 'string' && rawValue) {
+            callbacks.onPlayerNameDetected(rawValue);
+          }
         }
         break;
       }
+
       case 'game_info': {
-        if (data.game_mode) callbacks.onGameModeDetected(String(data.game_mode));
-        if (data.map) callbacks.onMapDetected(String(data.map));
-        if (data.legend) callbacks.onLegendDetected(normalizeLegendName(String(data.legend)));
+        if (key === 'player') {
+          const parsed = safeParse<{ player_name?: string }>(rawValue);
+          if (parsed?.player_name) callbacks.onPlayerNameDetected(parsed.player_name);
+        }
         break;
       }
+
+      case 'match_info': {
+        if (key === 'game_mode') {
+          callbacks.onGameModeDetected(String(rawValue));
+        } else if (key === 'tabs') {
+          const tabs = safeParse<Record<string, number>>(rawValue);
+          if (tabs) {
+            if (tabs.kills !== undefined) callbacks.onKill(Number(tabs.kills));
+            if (tabs.assists !== undefined) callbacks.onAssist(Number(tabs.assists));
+            if (tabs.damage !== undefined) callbacks.onDamage(Number(tabs.damage));
+            if (tabs.knockdowns !== undefined) callbacks.onKnockdown(Number(tabs.knockdowns));
+          }
+        } else if (key === 'map_name') {
+          callbacks.onMapDetected(String(rawValue));
+        }
+        break;
+      }
+
+      case 'match_state': {
+        if (key === 'match_state') {
+          const state: MatchState = String(rawValue) === 'active' ? 'active' : 'inactive';
+          callbacks.onMatchStateChange(state);
+        }
+        break;
+      }
+
       case 'team': {
-        const members: GepTeamMember[] = [];
-        for (const [key, val] of Object.entries(data)) {
-          if (key.startsWith('teammate')) {
-            const tm = safeParse<{ name?: string; legend?: string; platform?: string; state?: string }>(val);
-            if (tm) members.push({ name: tm.name ?? '', legend: normalizeLegendName(tm.legend ?? ''), platform: tm.platform ?? 'PC', state: (tm.state ?? 'alive') as GepTeamMember['state'] });
+        if (key.startsWith('teammate')) {
+          const tm = safeParse<{ name?: string; state?: string }>(rawValue);
+          if (tm) {
+            teammateBuffer.set(key, {
+              name: tm.name ?? '',
+              legend: '',
+              platform: 'PC',
+              state: (tm.state === 'knocked_out' ? 'knocked' : tm.state ?? 'alive') as GepTeamMember['state'],
+            });
+            callbacks.onTeamUpdate(Array.from(teammateBuffer.values()));
+          }
+        } else if (key.startsWith('legendSelect')) {
+          const ls = safeParse<{ playerName?: string; legendName?: string; is_local?: boolean }>(rawValue);
+          if (ls?.legendName) {
+            if (ls.is_local) {
+              callbacks.onLegendDetected(normalizeLegendName(ls.legendName));
+            }
+            for (const [tmKey, tm] of teammateBuffer) {
+              if (tm.name === ls.playerName) {
+                teammateBuffer.set(tmKey, { ...tm, legend: normalizeLegendName(ls.legendName) });
+                callbacks.onTeamUpdate(Array.from(teammateBuffer.values()));
+                break;
+              }
+            }
           }
         }
-        if (members.length) callbacks.onTeamUpdate(members);
         break;
       }
+
       case 'inventory': {
-        const items: string[] = [];
-        for (const [key, val] of Object.entries(data)) {
-          if (key.startsWith('inventory_')) {
-            const item = safeParse<{ name?: string }>(val);
-            if (item?.name) items.push(normalizeWeaponName(item.name));
+        if (key === 'weapons') {
+          const weapons = safeParse<Record<string, string>>(rawValue);
+          if (weapons) {
+            const items = Object.values(weapons).map(w => normalizeWeaponName(w));
+            callbacks.onInventoryUpdate(items);
           }
         }
-        if (items.length) callbacks.onInventoryUpdate(items);
         break;
       }
+
       case 'location': {
-        const loc = safeParse<{ x: number; y: number; z: number }>(data.location ?? data);
-        if (loc) callbacks.onLocationUpdate(Number(loc.x), Number(loc.y), Number(loc.z));
+        if (key === 'location') {
+          const loc = safeParse<{ x: string | number; y: string | number; z: string | number }>(rawValue);
+          if (loc) callbacks.onLocationUpdate(Number(loc.x), Number(loc.y), Number(loc.z));
+        }
         break;
       }
+
       case 'roster': {
-        const players: GepRosterPlayer[] = [];
-        for (const [key, val] of Object.entries(data)) {
-          if (key.startsWith('roster_')) {
-            const p = safeParse<{ name?: string; team_id?: number; platform?: string; is_teammate?: boolean }>(val);
-            if (p) players.push({ name: p.name ?? '', teamId: Number(p.team_id ?? 0), platform: p.platform ?? 'PC', isTeammate: Boolean(p.is_teammate) });
+        if (key.startsWith('roster_')) {
+          const p = safeParse<{ name?: string; team_id?: number; platform_hw?: number; isTeammate?: boolean }>(rawValue);
+          if (p) {
+            rosterBuffer.set(key, {
+              name: p.name ?? '',
+              teamId: Number(p.team_id ?? 0),
+              platform: platformHwToString(p.platform_hw),
+              isTeammate: Boolean(p.isTeammate),
+            });
+            if (rosterFlushTimer) clearTimeout(rosterFlushTimer);
+            rosterFlushTimer = setTimeout(flushRoster, ROSTER_DEBOUNCE_MS);
           }
         }
-        if (players.length) callbacks.onRosterUpdate(players);
+        break;
+      }
+
+      case 'damage': {
+        if (key === 'totalDamageDealt') {
+          callbacks.onDamage(Number(rawValue));
+        }
+        break;
+      }
+
+      case 'match_summary': {
+        if (key === 'match_summary') {
+          const summary = safeParse<{ rank?: string | number; teams?: string | number; squadKills?: string | number }>(rawValue);
+          if (summary) {
+            callbacks.onMatchSummary({
+              rank: Number(summary.rank ?? 0),
+              teams: Number(summary.teams ?? 0),
+              squadKills: Number(summary.squadKills ?? 0),
+            });
+          }
+        }
         break;
       }
     }
   } catch (error) {
-    console.error('[GEP] Error handling info update:', feature, error);
+    console.error('[GEP] Error handling info update:', feature, key, error);
   }
 }
 
@@ -237,12 +365,12 @@ function handleNewEvents(events: { events: Array<{ name: string; data: unknown }
 }
 
 export function cleanup(): void {
-  try {
-    if (typeof overwolf !== 'undefined' && overwolf && overwolf.games?.events) {
-      overwolf.games.events.onInfoUpdates2.removeListener(handleInfoUpdate as unknown);
-      overwolf.games.events.onNewEvents.removeListener(handleNewEvents as unknown);
-    }
-  } catch { /* ignore */ }
   callbacks = null;
-  gepProvider = null;
+  gepPackage = null;
+  teammateBuffer.clear();
+  rosterBuffer.clear();
+  if (rosterFlushTimer) {
+    clearTimeout(rosterFlushTimer);
+    rosterFlushTimer = null;
+  }
 }

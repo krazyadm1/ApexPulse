@@ -13,6 +13,9 @@ import MapsPage from './pages/MapsPage';
 import SettingsPage from './pages/SettingsPage';
 import FaqPage from './pages/FaqPage';
 import WelcomePage from './pages/WelcomePage';
+import PostMatchSummary from './components/PostMatchSummary';
+import RatingPrompt from './components/RatingPrompt';
+import { MatchRecord } from '../shared/types';
 
 type Page = 'Home' | 'Stats' | 'Weapons' | 'Legends' | 'History' | 'Maps' | 'FAQ' | 'Settings';
 
@@ -36,6 +39,8 @@ const App: React.FC = () => {
     setupComplete ? 'done' : 'consent'
   );
   const [errorToast, setErrorToast] = useState<string | null>(null);
+  const [lastMatch, setLastMatch] = useState<MatchRecord | null>(null);
+  const [showRating, setShowRating] = useState(false);
 
   React.useEffect(() => {
     const api = (window as unknown as { apexPulse?: { on: (ch: string, cb: (...args: unknown[]) => void) => void } }).apexPulse;
@@ -44,6 +49,23 @@ const App: React.FC = () => {
       const err = data as { message: string };
       setErrorToast(err.message);
       setTimeout(() => setErrorToast(null), 8000);
+    });
+  }, []);
+
+  React.useEffect(() => {
+    const api = (window as unknown as { apexPulse?: { on: (ch: string, cb: (...args: unknown[]) => void) => void } }).apexPulse;
+    if (!api) return;
+    api.on('match-ended', (data: unknown) => {
+      const match = data as MatchRecord;
+      setLastMatch(match);
+      setTimeout(() => setLastMatch(null), 15000);
+
+      const matchCount = parseInt(localStorage.getItem('apexpulse_match_count') || '0', 10) + 1;
+      localStorage.setItem('apexpulse_match_count', String(matchCount));
+      const alreadyRated = localStorage.getItem('apexpulse_rated');
+      if (matchCount === 5 && !alreadyRated) {
+        setTimeout(() => setShowRating(true), 16000);
+      }
     });
   }, []);
 
@@ -119,6 +141,8 @@ const App: React.FC = () => {
           <button onClick={() => setErrorToast(null)} className="shrink-0 text-red-400/60 hover:text-red-400 ml-auto">&times;</button>
         </div>
       )}
+      {lastMatch && <PostMatchSummary match={lastMatch} onDismiss={() => setLastMatch(null)} />}
+      {showRating && <RatingPrompt onDismiss={() => setShowRating(false)} />}
       <aside className="w-64 bg-apex-navy border-r border-white/10 flex flex-col">
         <div className="p-6 flex items-center space-x-3 cursor-pointer" onClick={() => setActivePage('Home')}>
           <img src="./assets/icons/icon.png" alt="ApexPulse" className="w-10 h-10" />

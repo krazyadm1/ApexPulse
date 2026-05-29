@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   ApexApiMapRotationResponse,
   ApexApiCraftingResponse,
 } from '../../shared/types';
+import { formatCraftingItemName } from '../../shared/utils';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -158,7 +159,7 @@ const CraftingSection: React.FC<CraftingSectionProps> = ({ items }) => {
                   {entry.rarity}
                 </p>
                 <p className="text-sm font-medium text-white leading-snug line-clamp-2">
-                  {entry.item}
+                  {formatCraftingItemName(entry.item)}
                 </p>
                 <p className="text-apex-cyan font-mono font-bold text-sm mt-auto">
                   {entry.cost.toLocaleString()} mats
@@ -206,7 +207,6 @@ const MapsPage: React.FC = () => {
           serversOnline: payload.serversOnline ?? prev.serversOnline,
         }));
       });
-      api.send('request-state');
     }
   }, []);
 

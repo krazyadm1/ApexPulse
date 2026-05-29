@@ -7,7 +7,7 @@ const GEP_FEATURES = [
   'gep_internal', 'me', 'team', 'kill', 'damage', 'death',
   'revive', 'match_state', 'game_info', 'match_info',
   'inventory', 'location', 'match_summary', 'roster',
-  'rank', 'kill_feed',
+  'kill_feed',
 ];
 const MAX_RETRIES = 10;
 const RETRY_DELAY_MS = 3000;

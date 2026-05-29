@@ -36,7 +36,7 @@ interface CustomTooltipProps {
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-apex-navy border border-white border-opacity-10 rounded-lg px-3 py-2 text-sm shadow-lg">
+    <div className="bg-apex-navy border border-white/10 rounded-lg px-3 py-2 text-sm shadow-lg">
       {label !== undefined && (
         <p className="text-gray-400 mb-1 text-xs">Match {label}</p>
       )}
@@ -129,7 +129,7 @@ const HeirloomPackTracker: React.FC = () => {
 
       {/* Progress bar */}
       <div className="mt-5 mb-3">
-        <div className="relative h-4 w-full rounded-full bg-white bg-opacity-5 overflow-hidden">
+        <div className="relative h-4 w-full rounded-full bg-white/5 overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
@@ -140,11 +140,11 @@ const HeirloomPackTracker: React.FC = () => {
           />
           {/* Threshold markers */}
           <div
-            className="absolute top-0 h-full w-px bg-green-500 bg-opacity-50"
+            className="absolute top-0 h-full w-px bg-green-500/50"
             style={{ left: `${(300 / PACK_PITY) * 100}%` }}
           />
           <div
-            className="absolute top-0 h-full w-px bg-yellow-500 bg-opacity-50"
+            className="absolute top-0 h-full w-px bg-yellow-500/50"
             style={{ left: `${(450 / PACK_PITY) * 100}%` }}
           />
         </div>
@@ -246,15 +246,15 @@ const StatsPage: React.FC = () => {
 
         {/* Time range selector */}
         <CoachMark id="timerange" message="Filter your stats by time period. Play a few matches to see trends in the charts.">
-          <div className="flex gap-2 bg-apex-navy rounded-xl p-1 border border-white border-opacity-10">
+          <div className="flex gap-2 bg-apex-navy rounded-xl p-1 border border-white/10">
             {(Object.keys(TIME_RANGE_LABELS) as TimeRange[]).map((range) => (
               <button
                 key={range}
                 onClick={() => setTimeRange(range)}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                   timeRange === range
-                    ? 'bg-apex-cyan bg-opacity-15 text-apex-cyan border border-apex-cyan border-opacity-40'
-                    : 'text-gray-400 hover:text-white hover:bg-white hover:bg-opacity-5'
+                    ? 'bg-apex-cyan/15 text-apex-cyan border border-apex-cyan/40'
+                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
                 }`}
               >
                 {TIME_RANGE_LABELS[range]}

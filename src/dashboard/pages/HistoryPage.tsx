@@ -52,8 +52,11 @@ interface PlacementBadgeProps {
 }
 
 function PlacementBadge({ placement }: PlacementBadgeProps) {
+  const isValid = placement > 0;
   let bgClass: string;
-  if (placement === 1) {
+  if (!isValid) {
+    bgClass = 'bg-white/10 text-white';
+  } else if (placement === 1) {
     bgClass = 'bg-yellow-500 text-black';
   } else if (placement <= 5) {
     bgClass = 'bg-apex-cyan text-apex-navy';
@@ -64,9 +67,9 @@ function PlacementBadge({ placement }: PlacementBadgeProps) {
   return (
     <div
       className={`flex items-center justify-center w-10 h-10 rounded-full font-mono font-bold text-sm flex-shrink-0 ${bgClass}`}
-      title={`Placement: #${placement}`}
+      title={isValid ? `Placement: #${placement}` : 'Placement unknown'}
     >
-      #{placement}
+      {isValid ? `#${placement}` : '?'}
     </div>
   );
 }
@@ -214,7 +217,7 @@ function MatchCard({ match, isExpanded, onToggle }: MatchCardProps) {
             </span>
           </div>
           <div className="text-white/40 text-xs font-mono mt-0.5">
-            {new Date(match.timestamp * 1000).toLocaleString()}
+            {new Date(match.timestamp).toLocaleString()}
           </div>
         </div>
 

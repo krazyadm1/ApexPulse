@@ -163,6 +163,8 @@ export interface ApexApiPlayerResponse {
     uid: number;
     platform: string;
     level: number;
+    levelPrestige?: number;
+    avatar?: string;
     toNextLevelPercent: number;
     rank: {
       rankScore: number;
@@ -170,6 +172,7 @@ export interface ApexApiPlayerResponse {
       rankDiv: number;
       ladderPosPlatform: number;
       rankImg: string;
+      rankedSeason?: string;
     };
     battlepass: {
       level: string;
@@ -184,6 +187,7 @@ export interface ApexApiPlayerResponse {
     selectedLegend: string;
     currentState: string;
     currentStateSinceTimestamp: number;
+    currentStateAsText?: string;
   };
   legends: {
     selected: {
@@ -297,11 +301,13 @@ export interface LiveMatchData {
   mapName: string | null;
   legend: string | null;
   kills: number;
+  deaths: number;
   assists: number;
   knockdowns: number;
   damage: number;
   squadKills: number;
   teamsLeft: number;
+  totalTeams: number;
   teammates: GepTeamMember[];
   weaponKills: Record<string, number>;
   weaponKnockdowns: Record<string, number>;
@@ -325,7 +331,9 @@ export type MessageType =
   | 'REQUEST_STATE'
   | 'LOBBY_INTEL_UPDATE'
   | 'PACK_UPDATE'
-  | 'GAME_RUNNING_UPDATE';
+  | 'GAME_RUNNING_UPDATE'
+  | 'APP_ERROR'
+  | 'OVERLAY_AUTO_HIDDEN';
 
 export interface WindowMessage<T = unknown> {
   type: MessageType;

@@ -17,6 +17,9 @@ const channelMap: Record<MessageType, string> = {
   'REQUEST_STATE': 'request-state',
   'LOBBY_INTEL_UPDATE': 'lobby-intel-update',
   'PACK_UPDATE': 'pack-update',
+  'GAME_RUNNING_UPDATE': 'game-running-update',
+  'APP_ERROR': 'app-error',
+  'OVERLAY_AUTO_HIDDEN': 'overlay-auto-hidden',
 };
 
 // Injected by main process

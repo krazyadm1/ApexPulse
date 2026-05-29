@@ -1,4 +1,4 @@
-import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen, shell } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen, shell, Tray, Menu, nativeImage } from 'electron';
 import { execFile } from 'child_process';
 import path from 'path';
 import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, setUserDataPath } from '../background/database';
@@ -15,16 +15,21 @@ import { setApiKey, getApiKey, getPlayerStats, getMapRotation, getServerStatus, 
 import { initAuth, handlePlayerDetected, broadcastCurrentAuthState, loginSteam, loginDiscord, linkOriginManual, handleSteamCallback, handleDiscordCallback } from '../background/auth/auth-manager';
 import { getOriginName } from '../background/auth/origin-resolver';
 import { processRoster, clearLobby } from '../background/lobby-intel';
-import { initPackDetector, startScanning, stopScanning, registerPackCallbacks, cleanupPackDetector } from '../background/pack-detector';
+// Pack detector disabled: uses DOM APIs not available in main process.
+// TODO: reimplement using @napi-rs/canvas or move to renderer process.
 import { startAuthServer, stopAuthServer } from '../background/auth/auth-server';
+import { startLiveApiServer, stopLiveApiServer, registerLiveApiCallbacks, setLocalPlayerName, setStatusCallback as setLiveApiStatusCallback } from '../background/liveapi-client';
 import { API_POLL_INTERVAL_MS } from '../shared/constants';
 import { parseGameMode } from '../shared/utils';
 import { AppSettings } from '../shared/types';
 
 let dashboardWindow: BrowserWindow | null = null;
 let overlayWindow: BrowserWindow | null = null;
+let tray: Tray | null = null;
 let pollTimer: ReturnType<typeof setInterval> | null = null;
+let gepStatusTimer: ReturnType<typeof setInterval> | null = null;
 let currentGameMode: string | null = null;
+let isQuitting = false;
 
 function createDashboardWindow(): void {
   dashboardWindow = new BrowserWindow({
@@ -48,9 +53,29 @@ function createDashboardWindow(): void {
     shell.openExternal(url);
     return { action: 'deny' };
   });
+  dashboardWindow.on('close', (e: unknown) => {
+    if (!isQuitting) {
+      (e as Event).preventDefault();
+      dashboardWindow?.hide();
+    }
+  });
   dashboardWindow.on('closed', () => {
     dashboardWindow = null;
   });
+}
+
+function createTray(): void {
+  const iconPath = path.join(__dirname, 'assets/icons/icon.png');
+  const trayIcon = nativeImage.createFromPath(iconPath).resize({ width: 16, height: 16 });
+  tray = new Tray(trayIcon);
+  tray.setToolTip('ApexPulse');
+  const contextMenu = Menu.buildFromTemplate([
+    { label: 'Open ApexPulse', click: () => { dashboardWindow?.show(); dashboardWindow?.focus(); } },
+    { type: 'separator' },
+    { label: 'Quit', click: () => { isQuitting = true; app.quit(); } },
+  ]);
+  tray.setContextMenu(contextMenu);
+  tray.on('double-click', () => { dashboardWindow?.show(); dashboardWindow?.focus(); });
 }
 
 function createOverlayWindow(): void {
@@ -181,33 +206,39 @@ function broadcastFullState(): void {
   broadcastCurrentAuthState();
 }
 
-function startPolling(intervalMs: number): void {
-  if (!intervalMs) return;
-  if (pollTimer) clearInterval(pollTimer);
+async function triggerPoll(): Promise<void> {
+  if (!getApiKey()) return;
 
-  const poll = async () => {
-    const originName = getOriginName();
-    if (!originName) return;
-
+  const originName = getOriginName();
+  if (originName) {
     try {
       const stats = await getPlayerStats(originName);
       if (stats) broadcast('profile-update', stats);
     } catch {
       broadcastError('api_stats', 'Could not fetch player stats. Check your API key and connection.');
     }
+  }
 
-    try {
-      const maps = await getMapRotation();
-      const servers = await getServerStatus();
-      const serversOnline = servers ? Object.values(servers).every(r => r.Status === 'UP') : true;
-      if (maps) broadcast('map-rotation-update', { rotation: maps, serversOnline });
-    } catch {
-      broadcastError('api_maps', 'Could not fetch map rotation. Will retry shortly.');
-    }
-  };
+  try {
+    const maps = await getMapRotation();
+    const servers = await getServerStatus();
+    const crafting = await getCraftingRotation();
+    const gameServerKeys = ['Origin_login', 'EA_novafusion', 'EA_accounts', 'ApexOauth_Crossplay'];
+    const serversOnline = servers ? gameServerKeys.every(key => {
+      const category = (servers as Record<string, unknown>)[key];
+      if (!category || typeof category !== 'object') return true;
+      return Object.values(category as Record<string, { Status?: string }>).every(region => region?.Status === 'UP' || region?.Status === 'SLOW');
+    }) : true;
+    if (maps) broadcast('map-rotation-update', { rotation: maps, crafting, serversOnline });
+  } catch {
+    broadcastError('api_maps', 'Could not fetch map rotation. Will retry shortly.');
+  }
+}
 
-  poll();
-  pollTimer = setInterval(poll, intervalMs);
+function startPolling(intervalMs: number): void {
+  if (!intervalMs) return;
+  if (pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(triggerPoll, intervalMs);
 }
 
 function registerHotkeys(): void {
@@ -232,6 +263,7 @@ function setupIpcHandlers(): void {
   ipcMain.on('request-state', () => {
     broadcastFullState();
     checkIfApexRunning();
+    triggerPoll();
   });
 
   ipcMain.on('launch-apex', () => {
@@ -283,7 +315,7 @@ function patchMessaging(): void {
 
 function logToRenderer(msg: string): void {
   try {
-    (dashboardWindow as any)?.webContents?.executeJavaScript(`console.log('[MAIN] ${msg.replace(/'/g, "\\'").replace(/\\/g, '\\\\')}')`);
+    (dashboardWindow as any)?.webContents?.executeJavaScript(`console.log('[MAIN] ${msg.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}')`);
   } catch { /* ignore */ }
 }
 
@@ -342,29 +374,15 @@ async function initApp(): Promise<void> {
   setupIpcHandlers();
   patchMessaging();
 
-  try { await initPackDetector(); } catch (e) { console.warn('[ApexPulse] Pack detector init failed:', e); }
-  registerPackCallbacks({
-    onPacksOpened: (count, newTotal) => {
-      broadcast('pack-update', { count: newTotal, justOpened: count });
-    },
-    onPackScreenDetected: (packCount) => {
-      console.log(`[ApexPulse] Pack screen detected: ${packCount} packs`);
-    },
-    onPackScreenLeft: () => {},
-  });
-
   registerCallbacks({
     onMatchStateChange: (state) => {
       handleMatchStateChange(state);
       if (state === 'active') {
-        stopScanning();
         const isRanked = currentGameMode === 'ranked_br';
         if (isRanked && overlayWindow?.isVisible()) {
           overlayWindow.hide();
           broadcast('overlay-auto-hidden', { reason: 'ranked' });
         }
-      } else {
-        startScanning();
       }
     },
     onKillFeed: handleKillFeed,
@@ -383,6 +401,7 @@ async function initApp(): Promise<void> {
     },
     onPlayerNameDetected: async (name: string) => {
       setPlayerName(name);
+      setLocalPlayerName(name);
       await handlePlayerDetected(name);
     },
     onGameModeDetected: (mode: string) => {
@@ -397,9 +416,49 @@ async function initApp(): Promise<void> {
     broadcast('game-running-update', { running });
   });
 
+  registerLiveApiCallbacks({
+    onMatchStateChange: (state) => {
+      handleMatchStateChange(state);
+      if (state === 'active') {
+        const isRanked = currentGameMode === 'ranked_br';
+        if (isRanked && overlayWindow?.isVisible()) {
+          overlayWindow.hide();
+          broadcast('overlay-auto-hidden', { reason: 'ranked' });
+        }
+      }
+    },
+    onKillFeed: handleKillFeed,
+    onKill: handleKill,
+    onAssist: handleAssist,
+    onDamage: handleDamage,
+    onKnockdown: handleKnockdown,
+    onDeath: handleDeath,
+    onRevive: handleRevive,
+    onTeamUpdate: handleTeamUpdate,
+    onInventoryUpdate: handleInventoryUpdate,
+    onMatchSummary: handleMatchSummary,
+    onRosterUpdate: (players) => { processRoster(players); },
+    onPlayerNameDetected: async (name: string) => {
+      setPlayerName(name);
+      setLocalPlayerName(name);
+      await handlePlayerDetected(name);
+    },
+    onGameModeDetected: (mode: string) => {
+      handleGameModeDetected(mode);
+      currentGameMode = parseGameMode(mode);
+    },
+    onMapDetected: handleMapDetected,
+    onLegendDetected: handleLegendDetected,
+    onGameRunning: (running) => {
+      logToRenderer('LiveAPI game running change: ' + running);
+      broadcast('game-running-update', { running });
+    },
+  });
+  setLiveApiStatusCallback((msg) => logToRenderer(msg));
+
   initGep();
   checkGepStatus();
-  setInterval(checkGepStatus, 5 * 60 * 1000);
+  gepStatusTimer = setInterval(checkGepStatus, 5 * 60 * 1000);
 
   // Log GEP package events to renderer once windows exist
   const owApp2 = app as any;
@@ -419,13 +478,19 @@ async function initApp(): Promise<void> {
     broadcastFullState();
   });
 
-  startScanning();
   startPolling(settings.apiKey ? API_POLL_INTERVAL_MS : 0);
   registerHotkeys();
 
   await initCmp();
+  createTray();
   createDashboardWindow();
   createOverlayWindow();
+  startLiveApiServer();
+  const originName = getOriginName();
+  if (originName) {
+    setLocalPlayerName(originName);
+    logToRenderer('[LiveAPI] Local player set from Origin: ' + originName);
+  }
   checkIfApexRunning();
 
   // Log GEP status to renderer after window is ready
@@ -437,9 +502,6 @@ async function initApp(): Promise<void> {
   };
   setTimeout(() => {
     logToRenderer('GEP status: ' + JSON.stringify(gepStatus));
-    if (!gepStatus.gep) {
-      broadcastError('gep_unavailable', 'Game events not available. Live tracking requires the Overwolf platform.');
-    }
   }, 2000);
 
   console.log('[ApexPulse] Initialization complete');
@@ -449,19 +511,31 @@ if (process.env.OW_DEV === 'true') {
   (app as any).commandLine.appendSwitch('owepm-packages-url', 'https://electronapi-qa.overwolf.com/packages');
 }
 
-app.whenReady().then(initApp);
+app.whenReady().then(initApp).catch(err => console.error('[ApexPulse] Fatal init error:', err));
+
+process.on('unhandledRejection', (reason) => {
+  console.error('[ApexPulse] Unhandled promise rejection:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  console.error('[ApexPulse] Uncaught exception:', err);
+});
 
 app.on('window-all-closed', () => {
   // Keep running even if dashboard is closed (overlay may be active)
 });
 
 app.on('before-quit', () => {
+  isQuitting = true;
   stopAuthServer();
+  stopLiveApiServer();
+  if (gepStatusTimer) clearInterval(gepStatusTimer);
+  if (pollTimer) clearInterval(pollTimer);
   endCurrentSession();
   cleanupGep();
-  cleanupPackDetector();
   closeDatabase();
   globalShortcut.unregisterAll();
+  tray?.destroy();
 });
 
 app.on('activate', () => {

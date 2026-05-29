@@ -107,5 +107,7 @@ export async function exchangeDiscordCode(code: string): Promise<boolean> {
 export function initiateDiscordLogin(): void {
   getDiscordAuthUrl().then(url => {
     shell.openExternal(url);
+  }).catch(err => {
+    console.error('[DiscordAuth] Failed to initiate login:', err);
   });
 }

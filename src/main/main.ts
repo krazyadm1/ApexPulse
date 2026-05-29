@@ -11,11 +11,12 @@ import {
   onMatchEnd,
 } from '../background/match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from '../background/session-manager';
-import { setApiKey, getPlayerStats, getMapRotation, getServerStatus, getGepEventStatus } from '../background/api-client';
+import { setApiKey, getApiKey, getPlayerStats, getMapRotation, getServerStatus, getGepEventStatus, getCraftingRotation } from '../background/api-client';
 import { initAuth, handlePlayerDetected, broadcastCurrentAuthState, loginSteam, loginDiscord, linkOriginManual, handleSteamCallback, handleDiscordCallback } from '../background/auth/auth-manager';
 import { getOriginName } from '../background/auth/origin-resolver';
 import { processRoster, clearLobby } from '../background/lobby-intel';
 import { initPackDetector, startScanning, stopScanning, registerPackCallbacks, cleanupPackDetector } from '../background/pack-detector';
+import { startAuthServer, stopAuthServer } from '../background/auth/auth-server';
 import { API_POLL_INTERVAL_MS } from '../shared/constants';
 import { parseGameMode } from '../shared/utils';
 import { AppSettings } from '../shared/types';
@@ -335,6 +336,7 @@ async function initApp(): Promise<void> {
     steamApiKey: settings.steamApiKey ?? '',
     discordClientId: settings.discordClientId ?? '',
   });
+  startAuthServer();
 
   initSessionManager();
   setupIpcHandlers();
@@ -454,6 +456,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('before-quit', () => {
+  stopAuthServer();
   endCurrentSession();
   cleanupGep();
   cleanupPackDetector();

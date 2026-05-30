@@ -52,9 +52,10 @@ export async function handlePlayerDetected(name: string): Promise<void> {
   await handleGepPlayerNameDetected(name);
 }
 
-export function broadcastCurrentAuthState(): void {
+export function broadcastCurrentAuthState(): UserAccount | null {
   const account = getUserAccount();
   broadcastAuthChange(account);
+  return account;
 }
 
 export { getOriginName };

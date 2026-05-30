@@ -6,6 +6,7 @@ import { broadcastSession } from './messaging';
 
 let currentSession: SessionData | null = null;
 let sessionTimeoutTimer: ReturnType<typeof setTimeout> | null = null;
+let lastActivityTime: number = 0;
 
 export function initSessionManager(): void {
   const latest = getLatestSession();
@@ -13,6 +14,7 @@ export function initSessionManager(): void {
     const elapsed = nowMs() - latest.startTime;
     if (elapsed < SESSION_TIMEOUT_MS) {
       currentSession = latest;
+      lastActivityTime = nowMs();
       resetTimeout();
       return;
     }
@@ -34,6 +36,7 @@ export function onMatchPlayed(match: MatchRecord): void {
   currentSession!.totalKills += match.kills;
   currentSession!.totalDamage += match.damage;
   currentSession!.totalRpChange += match.rpChange ?? 0;
+  lastActivityTime = nowMs();
 
   upsertSession(currentSession!);
   broadcastSession(currentSession!);
@@ -42,7 +45,8 @@ export function onMatchPlayed(match: MatchRecord): void {
 
 function isSessionExpired(): boolean {
   if (!currentSession) return true;
-  return nowMs() - (currentSession.endTime ?? currentSession.startTime) > SESSION_TIMEOUT_MS;
+  const since = lastActivityTime || currentSession.startTime;
+  return nowMs() - since > SESSION_TIMEOUT_MS;
 }
 
 function startNewSession(): void {

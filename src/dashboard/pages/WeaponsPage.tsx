@@ -370,11 +370,6 @@ export default function WeaponsPage() {
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
                 }}
-                className={
-                  isActive
-                    ? 'bg-apex-cyan bg-opacity-20 text-apex-cyan'
-                    : ''
-                }
               >
                 {cat}
               </button>

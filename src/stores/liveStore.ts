@@ -18,6 +18,7 @@ interface LiveState {
   inventory: string[];
   placement: number | null;
   isLive: boolean;
+  gameRunning: boolean;
   lobbyPlayers: LobbyPlayer[];
   init: () => void;
 }
@@ -38,6 +39,7 @@ export const useLiveStore = create<LiveState>((set) => ({
   inventory: [],
   placement: null,
   isLive: false,
+  gameRunning: false,
   lobbyPlayers: [],
 
   init: () => {
@@ -70,6 +72,11 @@ export const useLiveStore = create<LiveState>((set) => ({
 
     onMessage('MATCH_ENDED', () => {
       set({ isLive: false, matchState: 'idle', lobbyPlayers: [] });
+    });
+
+    onMessage('GAME_RUNNING_UPDATE', (msg: WindowMessage) => {
+      const { running } = msg.payload as { running: boolean };
+      set({ gameRunning: running, ...(running ? {} : { isLive: false, matchState: 'idle' as TrackerState }) });
     });
   },
 }));

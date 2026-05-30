@@ -8,7 +8,6 @@ contextBridge.exposeInMainWorld('apexPulse', {
       'launch-apex',
       'login-steam',
       'login-discord',
-      'link-origin-manual',
       'update-settings',
       'set-pack-count',
     ];
@@ -42,7 +41,15 @@ contextBridge.exposeInMainWorld('apexPulse', {
 
   // One-shot receive
   once: (channel: string, callback: (...args: unknown[]) => void) => {
-    ipcRenderer.once(channel, (_event, ...args) => callback(...args));
+    const validChannels = [
+      'live-match-update', 'match-ended', 'match-history-update', 'profile-update',
+      'map-rotation-update', 'auth-state-change', 'settings-update', 'session-update',
+      'origin-detected', 'lobby-intel-update', 'pack-update', 'game-running-update',
+      'app-error', 'overlay-auto-hidden',
+    ];
+    if (validChannels.includes(channel)) {
+      ipcRenderer.once(channel, (_event, ...args) => callback(...args));
+    }
   },
 
   // Invoke with response

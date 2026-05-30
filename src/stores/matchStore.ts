@@ -52,13 +52,23 @@ export const useMatchStore = create<MatchState>((set) => ({
 
     onMessage('MATCH_ENDED', (msg: WindowMessage) => {
       const match = msg.payload as MatchRecord;
-      set(state => ({
-        recentMatches: [match, ...state.recentMatches].slice(0, 50),
-        totalMatches: state.totalMatches + 1,
-        totalKills: state.totalKills + match.kills,
-        totalDamage: state.totalDamage + match.damage,
-        totalWins: state.totalWins + (match.isWin ? 1 : 0),
-      }));
+      set(state => {
+        const totalMatches = state.totalMatches + 1;
+        const totalKills = state.totalKills + match.kills;
+        const totalDamage = state.totalDamage + match.damage;
+        const totalWins = state.totalWins + (match.isWin ? 1 : 0);
+        const deaths = Math.max(totalMatches - totalWins, 1);
+        return {
+          recentMatches: [match, ...state.recentMatches].slice(0, 50),
+          totalMatches,
+          totalKills,
+          totalDamage,
+          totalWins,
+          avgDamage: Math.round(totalDamage / totalMatches),
+          kdRatio: Math.round((totalKills / deaths) * 100) / 100,
+          winRate: Math.round((totalWins / totalMatches) * 1000) / 10,
+        };
+      });
     });
   },
 }));

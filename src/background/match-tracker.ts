@@ -5,6 +5,7 @@ import { broadcastLiveUpdate, broadcastMatchEnded } from './messaging';
 
 let live: LiveMatchData = createEmptyLiveData();
 let playerName = '';
+let postMatchTimer: ReturnType<typeof setTimeout> | null = null;
 
 type MatchEndCallback = (match: MatchRecord) => void;
 let onMatchEndCallback: MatchEndCallback | null = null;
@@ -33,11 +34,13 @@ function createEmptyLiveData(): LiveMatchData {
     mapName: null,
     legend: null,
     kills: 0,
+    deaths: 0,
     assists: 0,
     knockdowns: 0,
     damage: 0,
     squadKills: 0,
     teamsLeft: 0,
+    totalTeams: 0,
     teammates: [],
     weaponKills: {},
     weaponKnockdowns: {},
@@ -55,6 +58,7 @@ function transitionTo(newState: TrackerState): void {
 
 export function handleMatchStateChange(state: MatchState): void {
   if (state === 'active' && live.state !== 'in_match') {
+    if (postMatchTimer) { clearTimeout(postMatchTimer); postMatchTimer = null; }
     live = createEmptyLiveData();
     live.matchStartTime = nowMs();
     transitionTo('in_match');
@@ -113,6 +117,7 @@ export function handleKnockdown(totalKnockdowns: number): void {
 
 export function handleDeath(): void {
   if (live.state !== 'in_match') return;
+  live.deaths++;
   broadcastLiveUpdate(live);
 }
 
@@ -136,8 +141,8 @@ export function handleInventoryUpdate(items: string[]): void {
 
 export function handleMatchSummary(summary: GepMatchSummary): void {
   live.placement = summary.rank;
-  live.squadKills = summary.squadKills;
-  live.teamsLeft = 0;
+  live.squadKills = Math.max(live.squadKills, summary.squadKills);
+  live.totalTeams = summary.teams ?? live.totalTeams;
 
   if (live.state === 'in_match') {
     transitionTo('post_match');
@@ -182,7 +187,7 @@ function finalizeMatch(): void {
     gameMode: live.gameMode ?? 'battle_royale',
     mapName: live.mapName ?? 'Unknown',
     placement: live.placement ?? 0,
-    totalTeams: live.teamsLeft,
+    totalTeams: live.totalTeams ?? live.teamsLeft,
     kills: live.kills,
     assists: live.assists,
     knockdowns: live.knockdowns,
@@ -219,7 +224,8 @@ function finalizeMatch(): void {
     onMatchEndCallback(record);
   }
 
-  setTimeout(() => {
+  postMatchTimer = setTimeout(() => {
+    postMatchTimer = null;
     live = createEmptyLiveData();
     transitionTo('idle');
   }, 5000);

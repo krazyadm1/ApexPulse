@@ -20,6 +20,7 @@ export const DISCORD_TOKEN_URL = 'https://discord.com/api/oauth2/token';
 export const AUTH_CALLBACK_PORT = 3847;
 export const AUTH_CALLBACK_BASE = `http://localhost:${AUTH_CALLBACK_PORT}`;
 
+export const LIVEAPI_PORT = 7777;
 export const DB_FILENAME = 'apexpulse.db';
 export const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
 export const API_POLL_INTERVAL_MS = 120_000;

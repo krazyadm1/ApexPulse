@@ -4,12 +4,16 @@ import { broadcastLobbyIntel } from './messaging';
 
 let currentLobby: LobbyPlayer[] = [];
 let lookupInProgress = false;
+let lookupGeneration = 0;
 
 export function getLobbyPlayers(): LobbyPlayer[] {
   return [...currentLobby];
 }
 
 export async function processRoster(roster: GepRosterPlayer[]): Promise<void> {
+  lookupGeneration++;
+  const thisGeneration = lookupGeneration;
+
   currentLobby = roster.map(p => ({
     name: p.name,
     platform: p.platform,
@@ -30,11 +34,12 @@ export async function processRoster(roster: GepRosterPlayer[]): Promise<void> {
     });
 
     for (const player of sorted) {
+      if (thisGeneration !== lookupGeneration) break;
       if (!player.name) continue;
 
       try {
         const stats = await getPlayerStats(player.name);
-        if (stats) {
+        if (stats && thisGeneration === lookupGeneration) {
           applyStatsToPlayer(player, stats);
         }
         player.loaded = true;
@@ -42,7 +47,9 @@ export async function processRoster(roster: GepRosterPlayer[]): Promise<void> {
         player.loaded = true;
       }
 
-      broadcastLobbyIntel([...currentLobby]);
+      if (thisGeneration === lookupGeneration) {
+        broadcastLobbyIntel([...currentLobby]);
+      }
     }
   } finally {
     lookupInProgress = false;
@@ -62,6 +69,6 @@ function applyStatsToPlayer(player: LobbyPlayer, stats: ApexApiPlayerResponse): 
 }
 
 export function clearLobby(): void {
+  lookupGeneration++;
   currentLobby = [];
-  lookupInProgress = false;
 }

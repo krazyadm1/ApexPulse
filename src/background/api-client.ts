@@ -45,57 +45,37 @@ export async function getPlayerStats(
   platform: string = 'PC'
 ): Promise<ApexApiPlayerResponse | null> {
   await throttle();
-  try {
-    const response = await client.get<ApexApiPlayerResponse>(API_ENDPOINTS.bridge, {
-      params: { auth: apiKey, player: playerName, platform },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('[api-client] getPlayerStats error:', error);
-    return null;
-  }
+  const response = await client.get<ApexApiPlayerResponse>(API_ENDPOINTS.bridge, {
+    params: { auth: apiKey, player: playerName, platform },
+  });
+  return response.data;
 }
 
 // Map rotation (version=2)
 export async function getMapRotation(): Promise<ApexApiMapRotationResponse | null> {
   await throttle();
-  try {
-    const response = await client.get<ApexApiMapRotationResponse>(API_ENDPOINTS.mapRotation, {
-      params: { auth: apiKey, version: 2 },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('[api-client] getMapRotation error:', error);
-    return null;
-  }
+  const response = await client.get<ApexApiMapRotationResponse>(API_ENDPOINTS.mapRotation, {
+    params: { auth: apiKey, version: 2 },
+  });
+  return response.data;
 }
 
 // Crafting rotation
 export async function getCraftingRotation(): Promise<ApexApiCraftingResponse[] | null> {
   await throttle();
-  try {
-    const response = await client.get<ApexApiCraftingResponse[]>(API_ENDPOINTS.crafting, {
-      params: { auth: apiKey },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('[api-client] getCraftingRotation error:', error);
-    return null;
-  }
+  const response = await client.get<ApexApiCraftingResponse[]>(API_ENDPOINTS.crafting, {
+    params: { auth: apiKey },
+  });
+  return response.data;
 }
 
 // Server status
 export async function getServerStatus(): Promise<ApexApiServerStatusResponse | null> {
   await throttle();
-  try {
-    const response = await client.get<ApexApiServerStatusResponse>(API_ENDPOINTS.servers, {
-      params: { auth: apiKey },
-    });
-    return response.data;
-  } catch (error) {
-    console.error('[api-client] getServerStatus error:', error);
-    return null;
-  }
+  const response = await client.get<ApexApiServerStatusResponse>(API_ENDPOINTS.servers, {
+    params: { auth: apiKey },
+  });
+  return response.data;
 }
 
 // Name to UID lookup

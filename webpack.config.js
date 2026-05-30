@@ -23,6 +23,7 @@ const mainConfig = {
     'better-sqlite3': 'commonjs better-sqlite3',
     '@overwolf/ow-electron': 'commonjs @overwolf/ow-electron',
     'tesseract.js': 'commonjs tesseract.js',
+    'ws': 'commonjs ws',
   },
   node: { __dirname: false, __filename: false },
   devtool: isProd ? false : 'source-map',

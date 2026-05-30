@@ -94,7 +94,7 @@ function AccountRow({ icon, provider, linkedName, onAction, actionLabel, manualI
           />
           <button
             onClick={onAction}
-            className="bg-apex-cyan text-apex-dark font-bold px-6 py-2 rounded-lg hover:bg-opacity-90 text-sm whitespace-nowrap"
+            className="bg-apex-cyan text-apex-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 text-sm whitespace-nowrap"
           >
             {actionLabel}
           </button>
@@ -102,7 +102,7 @@ function AccountRow({ icon, provider, linkedName, onAction, actionLabel, manualI
       ) : (
         <button
           onClick={onAction}
-          className="bg-apex-cyan text-apex-dark font-bold px-6 py-2 rounded-lg hover:bg-opacity-90 text-sm"
+          className="bg-apex-cyan text-apex-dark font-bold px-6 py-2 rounded-lg hover:opacity-90 text-sm"
         >
           {actionLabel}
         </button>
@@ -235,11 +235,25 @@ export default function SettingsPage() {
         <div className="flex justify-end">
           <button
             onClick={handleSaveApiKey}
-            className="bg-apex-cyan text-apex-dark font-bold px-6 py-2 rounded-lg hover:bg-opacity-90"
+            className="bg-apex-cyan text-apex-dark font-bold px-6 py-2 rounded-lg hover:opacity-90"
           >
             Save
           </button>
         </div>
+      </SectionCard>
+
+      {/* ── Live Match Tracking ── */}
+      <SectionCard title="Live Match Tracking">
+        <p className="text-white/60 text-sm mb-3">
+          Connect directly to Apex Legends for real-time match data (kills, damage, weapons, deaths).
+          Add this to your Steam launch options:
+        </p>
+        <code className="block bg-black/30 text-apex-cyan px-4 py-3 rounded-lg text-sm font-mono select-all break-all mb-2">
+          +cl_liveapi_enabled 1 +cl_liveapi_ws_servers &quot;ws://127.0.0.1:7777&quot; +cl_liveapi_use_protobuf 0
+        </code>
+        <p className="text-white/40 text-xs">
+          Steam → Library → Apex Legends → Right-click → Properties → Launch Options. One-time setup.
+        </p>
       </SectionCard>
 
       {/* ── Linked Accounts ── */}
@@ -389,7 +403,7 @@ export default function SettingsPage() {
           </button>
           <button
             onClick={handleSavePacks}
-            className="bg-apex-cyan text-apex-dark font-bold px-6 py-2 rounded-lg hover:bg-opacity-90"
+            className="bg-apex-cyan text-apex-dark font-bold px-6 py-2 rounded-lg hover:opacity-90"
           >
             Save
           </button>

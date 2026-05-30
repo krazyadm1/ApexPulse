@@ -19,10 +19,27 @@ declare module 'electron' {
     isVisible(): boolean;
     show(): void;
     hide(): void;
+    focus(): void;
     getPosition(): [number, number];
     setIgnoreMouseEvents(ignore: boolean, options?: Record<string, boolean>): void;
     close(): void;
   }
+  export class Tray {
+    constructor(image: NativeImage);
+    setToolTip(tooltip: string): void;
+    setContextMenu(menu: Menu): void;
+    on(event: string, handler: (...args: unknown[]) => void): void;
+    destroy(): void;
+  }
+  export class Menu {
+    static buildFromTemplate(template: Array<{ label?: string; type?: string; click?: () => void }>): Menu;
+  }
+  interface NativeImage {
+    resize(options: { width?: number; height?: number }): NativeImage;
+  }
+  export const nativeImage: {
+    createFromPath(path: string): NativeImage;
+  };
   export const ipcMain: {
     on: (channel: string, handler: (event: unknown, ...args: unknown[]) => void) => void;
     handle: (channel: string, handler: (event: unknown, ...args: unknown[]) => Promise<unknown> | unknown) => void;

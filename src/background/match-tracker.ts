@@ -6,6 +6,8 @@ import { broadcastLiveUpdate, broadcastMatchEnded } from './messaging';
 let live: LiveMatchData = createEmptyLiveData();
 let playerName = '';
 let postMatchTimer: ReturnType<typeof setTimeout> | null = null;
+let lastKnownRankScore: number | null = null;
+let matchStartRankScore: number | null = null;
 
 type MatchEndCallback = (match: MatchRecord) => void;
 let onMatchEndCallback: MatchEndCallback | null = null;
@@ -20,6 +22,10 @@ export function getPlayerName(): string {
 
 export function onMatchEnd(callback: MatchEndCallback): void {
   onMatchEndCallback = callback;
+}
+
+export function updateRankScore(score: number): void {
+  lastKnownRankScore = score;
 }
 
 export function getLiveData(): LiveMatchData {
@@ -69,6 +75,7 @@ export function handleMatchStateChange(state: MatchState): void {
     live.mapName = prevMap;
     live.gameMode = prevMode;
     live.matchStartTime = nowMs();
+    matchStartRankScore = lastKnownRankScore;
     transitionTo('in_match');
     broadcastLiveUpdate(live);
   } else if (state === 'inactive' && live.state === 'in_match') {
@@ -243,6 +250,11 @@ function finalizeMatch(): void {
     squadKills: live.squadKills,
     headshots: live.headshots,
     bodyshots: live.bodyshots,
+    rpBefore: matchStartRankScore ?? undefined,
+    rpAfter: lastKnownRankScore ?? undefined,
+    rpChange: (matchStartRankScore != null && lastKnownRankScore != null)
+      ? lastKnownRankScore - matchStartRankScore
+      : undefined,
   };
 
   try {

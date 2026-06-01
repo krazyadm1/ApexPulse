@@ -217,6 +217,9 @@ const StatsPage: React.FC = () => {
     winRate,
     avgDamage,
     headshotStats,
+    rpHistory,
+    weeklyRpChange,
+    sessionRpChange,
   } = useMatchStore();
 
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
@@ -304,6 +307,44 @@ const StatsPage: React.FC = () => {
           />
         </div>
       </section>
+
+      {/* ── Ranked RP Tracking ── */}
+      {(rpHistory.length > 0 || sessionRpChange !== 0 || weeklyRpChange !== 0) && (
+        <section>
+          <h3 className="text-base font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
+            Ranked Progress
+          </h3>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="glass-card flex flex-col gap-1">
+              <span className="text-[var(--text-secondary)] text-xs uppercase tracking-widest">Session RP</span>
+              <span className={`text-3xl font-bold font-mono leading-tight ${sessionRpChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {sessionRpChange >= 0 ? '+' : ''}{sessionRpChange}
+              </span>
+              <span className="text-[var(--text-muted)] text-xs">Current session</span>
+            </div>
+            <div className="glass-card flex flex-col gap-1">
+              <span className="text-[var(--text-secondary)] text-xs uppercase tracking-widest">Weekly RP</span>
+              <span className={`text-3xl font-bold font-mono leading-tight ${weeklyRpChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {weeklyRpChange >= 0 ? '+' : ''}{weeklyRpChange}
+              </span>
+              <span className="text-[var(--text-muted)] text-xs">Last 7 days</span>
+            </div>
+            <div className="glass-card">
+              <span className="text-[var(--text-secondary)] text-xs uppercase tracking-widest">RP Per Match</span>
+              {rpHistory.length > 0 ? (
+                <ResponsiveContainer width="100%" height={80}>
+                  <LineChart data={[...rpHistory].reverse().map((r, i) => ({ game: i + 1, rp: r.rpChange ?? 0 }))} margin={{ top: 8, right: 4, left: -20, bottom: 0 }}>
+                    <YAxis tick={axisStyle} tickLine={false} axisLine={false} />
+                    <Line type="monotone" dataKey="rp" stroke="#00E5FF" strokeWidth={2} dot={{ r: 2, fill: '#00E5FF' }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <span className="text-[var(--text-muted)] text-xs mt-2 block">Play ranked matches to see RP trends</span>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Performance Charts (2-col) ── */}
       <section>

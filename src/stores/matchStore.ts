@@ -14,6 +14,9 @@ interface MatchState {
   weaponStats: Array<{ weaponName: string; totalKills: number; totalKnockdowns: number; matchesUsed: number }>;
   legendStats: Array<{ legend: string; matches: number; kills: number; damage: number; wins: number; avgDamage: number; kdRatio: number }>;
   headshotStats: Array<{ matchId: string; timestamp: number; headshots: number; bodyshots: number; legend: string }>;
+  rpHistory: Array<{ matchId: string; timestamp: number; rpBefore: number | null; rpAfter: number | null; rpChange: number | null; gameMode: string }>;
+  weeklyRpChange: number;
+  sessionRpChange: number;
   init: () => void;
 }
 
@@ -29,6 +32,9 @@ export const useMatchStore = create<MatchState>((set) => ({
   weaponStats: [],
   legendStats: [],
   headshotStats: [],
+  rpHistory: [],
+  weeklyRpChange: 0,
+  sessionRpChange: 0,
 
   init: () => {
     onMessage('MATCH_HISTORY_UPDATE', (msg: WindowMessage) => {
@@ -38,6 +44,8 @@ export const useMatchStore = create<MatchState>((set) => ({
         weaponStats: MatchState['weaponStats'];
         legendStats: MatchState['legendStats'];
         headshotStats: MatchState['headshotStats'];
+        rpHistory: MatchState['rpHistory'];
+        weeklyRpChange: number;
       };
       set({
         recentMatches: data.recentMatches,
@@ -51,7 +59,14 @@ export const useMatchStore = create<MatchState>((set) => ({
         weaponStats: data.weaponStats,
         legendStats: data.legendStats,
         headshotStats: data.headshotStats ?? [],
+        rpHistory: data.rpHistory ?? [],
+        weeklyRpChange: data.weeklyRpChange ?? 0,
       });
+    });
+
+    onMessage('SESSION_UPDATE', (msg: WindowMessage) => {
+      const session = msg.payload as { totalRpChange: number };
+      set({ sessionRpChange: session.totalRpChange ?? 0 });
     });
 
     onMessage('MATCH_ENDED', (msg: WindowMessage) => {

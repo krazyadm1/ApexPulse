@@ -303,6 +303,22 @@ function dbRowToMatchRecord(row: DbMatchRow): MatchRecord {
   };
 }
 
+// === RP Stats ===
+
+export function getRpHistory(limit = 20): Array<{ matchId: string; timestamp: number; rpBefore: number | null; rpAfter: number | null; rpChange: number | null; gameMode: string }> {
+  return requireDb().prepare(
+    "SELECT id as matchId, timestamp, rp_before as rpBefore, rp_after as rpAfter, rp_change as rpChange, game_mode as gameMode FROM matches WHERE rp_change IS NOT NULL ORDER BY timestamp DESC LIMIT ?"
+  ).all(limit) as any;
+}
+
+export function getWeeklyRpChange(): number {
+  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const row = requireDb().prepare(
+    "SELECT COALESCE(SUM(rp_change), 0) as total FROM matches WHERE rp_change IS NOT NULL AND timestamp >= ?"
+  ).get(weekAgo) as { total: number };
+  return row.total;
+}
+
 // === Headshot Stats ===
 
 export function getHeadshotStats(limit = 7): Array<{ matchId: string; timestamp: number; headshots: number; bodyshots: number; legend: string }> {

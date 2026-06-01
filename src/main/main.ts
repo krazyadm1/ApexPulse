@@ -1,14 +1,14 @@
 import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen, shell, Tray, Menu, nativeImage } from 'electron';
 import { execFile } from 'child_process';
 import path from 'path';
-import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, getHeadshotStats, setUserDataPath, exportAllData } from '../background/database';
+import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, getHeadshotStats, getRpHistory, getWeeklyRpChange, setUserDataPath, exportAllData } from '../background/database';
 import { initGep, registerCallbacks, onGameRunningChange, cleanup as cleanupGep } from '../background/gep-manager';
 import {
   setPlayerName, getPlayerName, handleMatchStateChange, handleKillFeed, handleKill,
   handleAssist, handleDamage, handleKnockdown, handleDeath, handleRevive,
   handleTeamUpdate, handleInventoryUpdate, handleMatchSummary,
   handleGameModeDetected, handleMapDetected, handleLegendDetected,
-  handleSquadKills, handleTeamsLeft, onMatchEnd,
+  handleSquadKills, handleTeamsLeft, updateRankScore, onMatchEnd,
 } from '../background/match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from '../background/session-manager';
 import { setApiKey, getApiKey, getPlayerStats, getMapRotation, getServerStatus, getGepEventStatus, getCraftingRotation } from '../background/api-client';
@@ -208,6 +208,8 @@ function broadcastFullState(): void {
     weaponStats: getWeaponStats(),
     legendStats: getLegendStats(),
     headshotStats: getHeadshotStats(7),
+    rpHistory: getRpHistory(20),
+    weeklyRpChange: getWeeklyRpChange(),
   });
 
   const session = getCurrentSession();
@@ -223,7 +225,12 @@ async function triggerPoll(): Promise<void> {
   if (originName) {
     try {
       const stats = await getPlayerStats(originName);
-      if (stats) broadcast('profile-update', stats);
+      if (stats) {
+        broadcast('profile-update', stats);
+        if (stats.global?.rank?.rankScore != null) {
+          updateRankScore(stats.global.rank.rankScore);
+        }
+      }
     } catch {
       broadcastError('api_stats', 'Could not fetch player stats. Check your API key and connection.');
     }
@@ -359,6 +366,7 @@ function setupIpcHandlers(): void {
       case 'player_name': setPlayerName(data.name); setLocalPlayerName(data.name); break;
       case 'squad_kills': handleSquadKills(Number(data.count ?? 1)); break;
       case 'teams_left': handleTeamsLeft(Number(data.teams)); break;
+      case 'rank_score': updateRankScore(Number(data.score)); break;
       case 'game_running': broadcast('game-running-update', { running: data.running }); break;
     }
   });

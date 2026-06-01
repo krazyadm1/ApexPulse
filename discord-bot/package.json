@@ -1,0 +1,13 @@
+{
+  "name": "apexpulse-discord-setup",
+  "version": "1.0.0",
+  "description": "One-time Discord server setup bot for ApexPulse",
+  "main": "setup.js",
+  "scripts": {
+    "setup": "node setup.js",
+    "bot": "node bot.js"
+  },
+  "dependencies": {
+    "discord.js": "^14.16.3"
+  }
+}

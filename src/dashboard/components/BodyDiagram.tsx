@@ -6,274 +6,249 @@ interface BodyDiagramProps {
 }
 
 const BodyDiagram: React.FC<BodyDiagramProps> = ({ headshotPct, bodyshotPct }) => {
-  const headColor = `rgba(0,229,255,${Math.max(headshotPct / 100, 0.2)})`;
-  const bodyColor = `rgba(0,200,200,${Math.max(bodyshotPct / 100, 0.2)})`;
-  const headStroke = 'rgba(0,229,255,0.4)';
-  const bodyStroke = 'rgba(0,200,200,0.3)';
-  const hazardFill = 'rgba(200,200,0,0.3)';
+  const headGlow = Math.max(headshotPct / 100, 0.25);
+  const bodyGlow = Math.max(bodyshotPct / 100, 0.2);
+  const edgeColor = `rgba(255,170,50,${bodyGlow * 0.8})`;
+  const headEdge = `rgba(0,229,255,${headGlow})`;
 
   return (
     <div className="flex items-center justify-center gap-10">
-      <div className="relative w-28">
-        <svg viewBox="0 0 200 480" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+      <div className="relative w-32">
+        <svg viewBox="0 0 200 500" className="w-full h-auto" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <filter id="headGlow">
+              <feGaussianBlur stdDeviation="4" result="blur" />
+              <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+            <radialGradient id="bodyGrad" cx="50%" cy="40%" r="60%">
+              <stop offset="0%" stopColor={`rgba(60,30,10,${bodyGlow * 0.6})`} />
+              <stop offset="100%" stopColor={`rgba(20,10,5,${bodyGlow * 0.9})`} />
+            </radialGradient>
+          </defs>
 
-          {/* ===== HEAD — Motorcycle helmet shape ===== */}
-          {/* Main helmet dome */}
+          {/* ===== HEAD ===== */}
+          {/* Skull / helmet shape */}
           <path
-            d="M100 8
-               C 68 8, 54 28, 54 50
-               C 54 62, 56 70, 62 76
-               L 62 82 Q 62 88, 70 90
-               L 130 90 Q 138 88, 138 82
-               L 138 76
-               C 144 70, 146 62, 146 50
-               C 146 28, 132 8, 100 8 Z"
-            fill={headColor}
-            stroke={headStroke}
+            d="M100 18
+               C 72 18, 62 38, 62 54
+               C 62 68, 66 76, 74 82
+               L 74 88 Q 78 94, 88 96
+               L 112 96 Q 122 94, 126 88
+               L 126 82
+               C 134 76, 138 68, 138 54
+               C 138 38, 128 18, 100 18 Z"
+            fill={`rgba(15,8,4,${headGlow * 0.9})`}
+            stroke={headEdge}
             strokeWidth="1.5"
+            filter="url(#glow)"
           />
-          {/* Visor slit — horizontal band across the face */}
-          <path
-            d="M60 48 L140 48 L142 56 L58 56 Z"
-            fill="rgba(0,0,0,0.4)"
-            stroke={headStroke}
-            strokeWidth="0.8"
-          />
-          {/* Chin guard bottom edge */}
-          <path
-            d="M70 90 L70 94 Q 72 100, 100 102 Q 128 100, 130 94 L130 90"
-            fill={headColor}
-            stroke={headStroke}
+          {/* Visor / eye — glowing cyan */}
+          <ellipse cx="100" cy="52" rx="18" ry="10"
+            fill={`rgba(0,229,255,${headGlow})`}
+            stroke={`rgba(0,229,255,${headGlow * 0.6})`}
             strokeWidth="1"
+            filter="url(#headGlow)"
+          />
+          {/* Visor inner glow dot */}
+          <ellipse cx="100" cy="52" rx="8" ry="5"
+            fill={`rgba(0,255,255,${headGlow * 0.5})`}
           />
 
           {/* ===== NECK ===== */}
-          <rect x="88" y="100" width="24" height="14" rx="3"
-            fill={bodyColor} stroke={bodyStroke} strokeWidth="1"
+          <path
+            d="M88 96 L88 110 Q 90 114, 100 114 Q 110 114, 112 110 L112 96"
+            fill="rgba(15,8,4,0.8)"
+            stroke={edgeColor}
+            strokeWidth="1"
           />
 
-          {/* ===== SHOULDER ARMOR PLATES ===== */}
-          {/* Left shoulder plate — wide angular shape */}
+          {/* ===== SHOULDERS + TORSO ===== */}
+          {/* Shoulder ridge left */}
           <path
-            d="M88 114 L60 118 L30 126 Q 24 130, 26 138
-               L 30 146 L 60 140 L 84 134 Z"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.5"
+            d="M88 112 L50 122 Q 38 126, 36 134 L38 140 L54 136 L88 128"
+            fill="url(#bodyGrad)"
+            stroke={edgeColor}
+            strokeWidth="1.2"
+            filter="url(#glow)"
           />
-          {/* Right shoulder plate */}
+          {/* Shoulder ridge right */}
           <path
-            d="M112 114 L140 118 L170 126 Q 176 130, 174 138
-               L 170 146 L 140 140 L 116 134 Z"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.5"
-          />
-          {/* Left shoulder hazard diamond */}
-          <polygon
-            points="48,132 56,126 64,132 56,138"
-            fill={hazardFill}
-            stroke="rgba(200,200,0,0.5)"
-            strokeWidth="0.8"
-          />
-          {/* Right shoulder hazard diamond */}
-          <polygon
-            points="136,132 144,126 152,132 144,138"
-            fill={hazardFill}
-            stroke="rgba(200,200,0,0.5)"
-            strokeWidth="0.8"
+            d="M112 112 L150 122 Q 162 126, 164 134 L162 140 L146 136 L112 128"
+            fill="url(#bodyGrad)"
+            stroke={edgeColor}
+            strokeWidth="1.2"
+            filter="url(#glow)"
           />
 
-          {/* ===== CHEST / TORSO — segmented armor ===== */}
-          {/* Main chest plate */}
+          {/* Main torso */}
           <path
-            d="M68 134 L68 240 Q 70 252, 80 254
-               L 120 254 Q 130 252, 132 240
-               L 132 134 Z"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.5"
+            d="M70 128
+               L64 140 L60 200 L58 260
+               Q 58 272, 68 274
+               L 84 276 L 100 278 L 116 276 L 132 274
+               Q 142 272, 142 260
+               L 140 200 L136 140 L130 128 Z"
+            fill="url(#bodyGrad)"
+            stroke={edgeColor}
+            strokeWidth="1.3"
+            filter="url(#glow)"
           />
-          {/* Center vertical line dividing left/right chest */}
-          <line x1="100" y1="134" x2="100" y2="254"
-            stroke={bodyStroke} strokeWidth="1.2"
+          {/* Chest center line */}
+          <line x1="100" y1="130" x2="100" y2="270"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.2})`} strokeWidth="0.8"
           />
-          {/* Upper chest horizontal segment line */}
-          <line x1="68" y1="170" x2="132" y2="170"
-            stroke={bodyStroke} strokeWidth="0.8"
+          {/* Chest plate upper edge */}
+          <path
+            d="M72 160 Q 100 155, 128 160"
+            fill="none" stroke={`rgba(255,170,50,${bodyGlow * 0.3})`} strokeWidth="0.8"
           />
-          {/* Mid chest horizontal segment line */}
-          <line x1="68" y1="204" x2="132" y2="204"
-            stroke={bodyStroke} strokeWidth="0.8"
+          {/* Belt line */}
+          <path
+            d="M62 255 L138 255"
+            stroke={edgeColor} strokeWidth="1.5"
           />
-
-          {/* ===== BELT / WAIST ARMOR BAND ===== */}
-          <rect x="64" y="250" width="72" height="16" rx="3"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.5"
-          />
-          {/* Belt center buckle detail */}
-          <rect x="92" y="253" width="16" height="10" rx="2"
-            fill="rgba(0,200,200,0.15)"
-            stroke={bodyStroke}
-            strokeWidth="0.8"
+          {/* Belt glow */}
+          <rect x="88" y="250" width="24" height="10" rx="2"
+            fill={`rgba(255,170,50,${bodyGlow * 0.25})`}
           />
 
           {/* ===== LEFT ARM ===== */}
-          {/* Left upper arm cylinder */}
+          {/* Upper arm */}
           <path
-            d="M30 146 L26 148 L22 192 Q 22 198, 26 200
-               L 38 200 Q 42 198, 42 192
-               L 46 148 L 42 146"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.2"
+            d="M38 140 L32 146 L26 198 Q 26 206, 30 208
+               L 42 208 Q 46 206, 46 198 L 50 148 L 46 140"
+            fill="rgba(15,8,4,0.85)"
+            stroke={edgeColor}
+            strokeWidth="1"
+            filter="url(#glow)"
           />
-          {/* Left elbow joint gap */}
-          <ellipse cx="30" cy="208" rx="10" ry="6"
-            fill="rgba(0,200,200,0.1)"
-            stroke={bodyStroke}
+          {/* Elbow joint */}
+          <ellipse cx="36" cy="216" rx="10" ry="6"
+            fill="rgba(15,8,4,0.6)"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.4})`}
             strokeWidth="0.8"
           />
-          {/* Left forearm armor plate */}
+          {/* Forearm */}
           <path
-            d="M20 214 L18 256 Q 18 264, 22 266
-               L 38 266 Q 42 264, 42 256
-               L 40 214 Z"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.2"
-          />
-          {/* Left hand */}
-          <path
-            d="M22 266 L20 280 Q 20 286, 24 288
-               L 36 288 Q 40 286, 38 280
-               L 38 266"
-            fill={bodyColor}
-            stroke={bodyStroke}
+            d="M26 222 L24 270 Q 24 278, 28 280
+               L 44 280 Q 48 278, 48 270 L 46 222 Z"
+            fill="rgba(15,8,4,0.85)"
+            stroke={edgeColor}
             strokeWidth="1"
+            filter="url(#glow)"
+          />
+          {/* Hand */}
+          <path
+            d="M28 280 L26 296 Q 28 302, 34 302
+               L 40 302 Q 46 300, 44 294 L 44 280"
+            fill="rgba(15,8,4,0.8)"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.3})`}
+            strokeWidth="0.8"
           />
 
           {/* ===== RIGHT ARM ===== */}
-          {/* Right upper arm cylinder */}
           <path
-            d="M170 146 L174 148 L178 192 Q 178 198, 174 200
-               L 162 200 Q 158 198, 158 192
-               L 154 148 L 158 146"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.2"
+            d="M162 140 L168 146 L174 198 Q 174 206, 170 208
+               L 158 208 Q 154 206, 154 198 L 150 148 L 154 140"
+            fill="rgba(15,8,4,0.85)"
+            stroke={edgeColor}
+            strokeWidth="1"
+            filter="url(#glow)"
           />
-          {/* Right elbow joint gap */}
-          <ellipse cx="170" cy="208" rx="10" ry="6"
-            fill="rgba(0,200,200,0.1)"
-            stroke={bodyStroke}
+          <ellipse cx="164" cy="216" rx="10" ry="6"
+            fill="rgba(15,8,4,0.6)"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.4})`}
             strokeWidth="0.8"
           />
-          {/* Right forearm armor plate */}
           <path
-            d="M160 214 L158 256 Q 158 264, 162 266
-               L 178 266 Q 182 264, 182 256
-               L 180 214 Z"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.2"
-          />
-          {/* Right hand */}
-          <path
-            d="M162 266 L160 280 Q 160 286, 164 288
-               L 176 288 Q 180 286, 178 280
-               L 178 266"
-            fill={bodyColor}
-            stroke={bodyStroke}
+            d="M154 222 L152 270 Q 152 278, 156 280
+               L 172 280 Q 176 278, 176 270 L 174 222 Z"
+            fill="rgba(15,8,4,0.85)"
+            stroke={edgeColor}
             strokeWidth="1"
+            filter="url(#glow)"
+          />
+          <path
+            d="M156 280 L154 296 Q 156 302, 162 302
+               L 168 302 Q 174 300, 172 294 L 172 280"
+            fill="rgba(15,8,4,0.8)"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.3})`}
+            strokeWidth="0.8"
           />
 
           {/* ===== LEFT LEG ===== */}
-          {/* Left thigh armor plate */}
+          {/* Thigh */}
           <path
-            d="M68 266 L64 268 L58 340 Q 58 348, 62 350
-               L 84 350 Q 88 348, 88 340
-               L 92 268 L 88 266"
-            fill={bodyColor}
-            stroke={bodyStroke}
+            d="M68 274 L62 280 L56 350 Q 56 358, 60 360
+               L 82 360 Q 86 358, 86 350 L 90 280 L 86 274"
+            fill="rgba(15,8,4,0.85)"
+            stroke={edgeColor}
             strokeWidth="1.2"
+            filter="url(#glow)"
           />
-          {/* Left thigh hazard diamond */}
-          <polygon
-            points="75,296 81,288 87,296 81,304"
-            fill={hazardFill}
-            stroke="rgba(200,200,0,0.5)"
+          {/* Knee */}
+          <ellipse cx="73" cy="368" rx="12" ry="7"
+            fill="rgba(15,8,4,0.6)"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.4})`}
             strokeWidth="0.8"
           />
-          {/* Left knee joint gap */}
-          <ellipse cx="75" cy="358" rx="12" ry="7"
-            fill="rgba(0,200,200,0.1)"
-            stroke={bodyStroke}
-            strokeWidth="0.8"
-          />
-          {/* Left shin/calf armor */}
+          {/* Shin */}
           <path
-            d="M62 365 L60 420 Q 60 428, 64 430
-               L 86 430 Q 90 428, 88 420
-               L 86 365 Z"
-            fill={bodyColor}
-            stroke={bodyStroke}
+            d="M60 375 L58 435 Q 58 443, 62 445
+               L 84 445 Q 88 443, 86 435 L 84 375 Z"
+            fill="rgba(15,8,4,0.85)"
+            stroke={edgeColor}
             strokeWidth="1.2"
+            filter="url(#glow)"
           />
-          {/* Left boot */}
+          {/* Boot */}
           <path
-            d="M58 430 L54 448 Q 52 458, 58 462
-               L 86 462 Q 94 460, 92 450
-               L 90 430"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.2"
+            d="M58 445 L54 460 Q 52 470, 58 472
+               L 86 472 Q 92 470, 90 462 L 88 445"
+            fill="rgba(15,8,4,0.9)"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.35})`}
+            strokeWidth="1"
           />
 
           {/* ===== RIGHT LEG ===== */}
-          {/* Right thigh armor plate */}
           <path
-            d="M112 266 L108 268 L112 340 Q 112 348, 116 350
-               L 138 350 Q 142 348, 142 340
-               L 136 268 L 132 266"
-            fill={bodyColor}
-            stroke={bodyStroke}
+            d="M114 274 L110 280 L114 350 Q 114 358, 118 360
+               L 140 360 Q 144 358, 144 350 L 138 280 L 132 274"
+            fill="rgba(15,8,4,0.85)"
+            stroke={edgeColor}
             strokeWidth="1.2"
+            filter="url(#glow)"
           />
-          {/* Right thigh hazard diamond */}
-          <polygon
-            points="119,296 125,288 131,296 125,304"
-            fill={hazardFill}
-            stroke="rgba(200,200,0,0.5)"
+          <ellipse cx="129" cy="368" rx="12" ry="7"
+            fill="rgba(15,8,4,0.6)"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.4})`}
             strokeWidth="0.8"
           />
-          {/* Right knee joint gap */}
-          <ellipse cx="125" cy="358" rx="12" ry="7"
-            fill="rgba(0,200,200,0.1)"
-            stroke={bodyStroke}
-            strokeWidth="0.8"
-          />
-          {/* Right shin/calf armor */}
           <path
-            d="M114 365 L112 420 Q 112 428, 116 430
-               L 138 430 Q 142 428, 140 420
-               L 138 365 Z"
-            fill={bodyColor}
-            stroke={bodyStroke}
+            d="M118 375 L116 435 Q 116 443, 120 445
+               L 140 445 Q 144 443, 142 435 L 140 375 Z"
+            fill="rgba(15,8,4,0.85)"
+            stroke={edgeColor}
             strokeWidth="1.2"
+            filter="url(#glow)"
           />
-          {/* Right boot */}
           <path
-            d="M110 430 L108 448 Q 106 458, 112 462
-               L 140 462 Q 148 460, 146 450
-               L 142 430"
-            fill={bodyColor}
-            stroke={bodyStroke}
-            strokeWidth="1.2"
+            d="M116 445 L112 460 Q 110 470, 116 472
+               L 144 472 Q 150 470, 148 462 L 144 445"
+            fill="rgba(15,8,4,0.9)"
+            stroke={`rgba(255,170,50,${bodyGlow * 0.35})`}
+            strokeWidth="1"
           />
-
         </svg>
       </div>
       <div className="flex flex-col gap-5">
@@ -283,7 +258,7 @@ const BodyDiagram: React.FC<BodyDiagramProps> = ({ headshotPct, bodyshotPct }) =
           <div className="text-[10px] text-gray-600 uppercase tracking-[0.15em] mt-0.5 font-semibold">Headshots</div>
         </div>
         <div>
-          <div className="text-3xl font-bold text-teal-400 font-mono leading-none">{bodyshotPct.toFixed(1)}%</div>
+          <div className="text-3xl font-bold text-amber-400 font-mono leading-none">{bodyshotPct.toFixed(1)}%</div>
           <div className="text-xs text-gray-400 mt-1">of Hits</div>
           <div className="text-[10px] text-gray-600 uppercase tracking-[0.15em] mt-0.5 font-semibold">Body Shots</div>
         </div>

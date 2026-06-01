@@ -1,0 +1,10 @@
+Apex Pulse is a standalone desktop companion app for Apex Legends built with ow-electron. It provides real-time performance tracking and game insights through a clean dashboard interface.
+
+Core features:
+- Live match stat tracking using GEP game events (kills, damage, knockdowns, assists, legend selection, match start/end, rank changes)
+- Lifetime stats dashboard pulling from the Apex Legends Status API with per-legend breakdowns
+- Current map rotation display with countdown timers for Battle Royale, Ranked, and LTMs
+- Pack opening detection and tracking using computer vision/OCR to help players monitor their inventory progress
+- In-game overlay for real-time stats without alt-tabbing
+
+The app uses GEP events as its primary data source for live match tracking, with the external API as a supplement for historical stats. The goal is to give players a single place to see everything about their Apex session — what's happening now, how they've performed over time, and what's coming up on the map rotation. Currently functional with process-based game detection and API integration, but GEP access would unlock real-time in-match event tracking which is the core value proposition.

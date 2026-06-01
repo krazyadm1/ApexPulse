@@ -6,7 +6,7 @@
 **Platform:** Windows 10/11 Desktop Application
 **Framework:** Electron + React + TypeScript
 **Target Game:** Apex Legends (PC — Steam)
-**Author:** Tristin / Campers Construction LLC
+**Author:** Tristin / ApexPulse
 **Date:** April 23, 2026
 
 ---
@@ -1235,7 +1235,7 @@ This proves the entire data pipeline works before building any UI.
     "name": "ApexPulse",
     "version": "1.0.0",
     "minimum-overwolf-version": "0.230.0",
-    "author": "Campers Construction LLC",
+    "author": "ApexPulse",
     "icon": "icons/icon.png",
     "description": "The Apex Legends tracker that actually works."
   },

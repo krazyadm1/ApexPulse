@@ -452,7 +452,7 @@ async function handleCredits(interaction) {
       '**Player Stats API**\n[apexlegendsapi.com](https://apexlegendsapi.com) (mozambiquehe.re)\n\n' +
       '**Rank Badge Images**\n[apexlegendsstatus.com](https://apexlegendsstatus.com/game-stats/cosmetics-statistics)\n\n' +
       '**Game Events**\n[Overwolf GEP](https://overwolf.github.io) (Game Events Provider)\n\n' +
-      '**Built by**\nCampers Construction LLC'
+      '**Built by**\nApexPulse'
     )
     .setFooter({ text: 'ApexPulse — The Apex Legends tracker that actually works.' })
     .setTimestamp();

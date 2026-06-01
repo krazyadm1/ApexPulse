@@ -21,7 +21,8 @@ export const DISCORD_TOKEN_URL = 'https://discord.com/api/oauth2/token';
 export const DISCORD_CLIENT_ID = '1510875680051691572';
 
 export const AUTH_CALLBACK_PORT = 3847;
-export const AUTH_CALLBACK_BASE = `http://localhost:${AUTH_CALLBACK_PORT}`;
+export const AUTH_CALLBACK_BASE_LOCAL = `http://localhost:${AUTH_CALLBACK_PORT}`;
+export const AUTH_CALLBACK_BASE = 'https://apexpulse.gg';
 
 export const LIVEAPI_PORT = 7777;
 export const DB_FILENAME = 'apexpulse.db';

@@ -17,6 +17,8 @@ export const DISCORD_API_BASE = 'https://discord.com/api/v10';
 export const DISCORD_AUTH_URL = 'https://discord.com/api/oauth2/authorize';
 export const DISCORD_TOKEN_URL = 'https://discord.com/api/oauth2/token';
 
+export const DISCORD_CLIENT_ID = '1510875680051691572';
+
 export const AUTH_CALLBACK_PORT = 3847;
 export const AUTH_CALLBACK_BASE = `http://localhost:${AUTH_CALLBACK_PORT}`;
 

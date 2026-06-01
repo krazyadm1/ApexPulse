@@ -1,6 +1,6 @@
 import { shell } from 'electron';
 import { DISCORD_AUTH_URL, DISCORD_TOKEN_URL, DISCORD_API_BASE, AUTH_CALLBACK_BASE } from '../../shared/constants';
-import { upsertUserAccount } from '../database';
+import { upsertUserAccount, getUserAccount } from '../database';
 import { broadcastAuthChange } from '../messaging';
 
 let discordClientId = '';
@@ -90,12 +90,7 @@ export async function exchangeDiscordCode(code: string): Promise<boolean> {
       ...(steamConnection ? { steam_id: steamConnection.id, steam_name: steamConnection.name } : {}),
     });
 
-    broadcastAuthChange({
-      provider: 'discord',
-      discordId: user.id,
-      name: user.username,
-      steamId: steamConnection?.id,
-    });
+    broadcastAuthChange(getUserAccount());
 
     return true;
   } catch (error) {

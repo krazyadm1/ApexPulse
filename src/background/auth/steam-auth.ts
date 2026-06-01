@@ -1,6 +1,6 @@
 import { shell } from 'electron';
 import { STEAM_OPENID_URL, AUTH_CALLBACK_BASE } from '../../shared/constants';
-import { upsertUserAccount } from '../database';
+import { upsertUserAccount, getUserAccount } from '../database';
 import { broadcastAuthChange } from '../messaging';
 
 interface SteamAuthResult {
@@ -69,12 +69,7 @@ export async function completeSteamLogin(callbackUrl: string, steamApiKey: strin
     steam_avatar: profile?.avatar ?? null,
   });
 
-  broadcastAuthChange({
-    provider: 'steam',
-    steamId: result.steamId,
-    name: profile?.name,
-    avatar: profile?.avatar,
-  });
+  broadcastAuthChange(getUserAccount());
 
   return true;
 }

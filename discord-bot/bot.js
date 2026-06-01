@@ -37,6 +37,23 @@ function apiGet(endpoint, params) {
   });
 }
 
+// ─── Multi-platform Player Lookup ────────────────────────────────────────────
+
+async function findPlayer(name, preferredPlatform) {
+  if (preferredPlatform) {
+    const data = await apiGet('/bridge', { player: name, platform: preferredPlatform });
+    if (!data.Error) return data;
+  }
+  for (const platform of ['PC', 'PS4', 'X1']) {
+    if (platform === preferredPlatform) continue;
+    try {
+      const data = await apiGet('/bridge', { player: name, platform });
+      if (!data.Error) return data;
+    } catch { /* try next */ }
+  }
+  return { Error: 'Player not found on any platform.' };
+}
+
 // ─── Rank Colors ─────────────────────────────────────────────────────────────
 
 const RANK_COLORS = {
@@ -231,10 +248,10 @@ async function handleStats(interaction) {
   await interaction.deferReply();
 
   try {
-    const data = await apiGet('/bridge', { player: player.name, platform: player.platform });
+    const data = await findPlayer(player.name, player.platform);
 
     if (data.Error) {
-      return interaction.editReply(`Player **${player.name}** not found. Check the spelling and platform.`);
+      return interaction.editReply(`Player **${player.name}** not found on any platform. Check the spelling.`);
     }
 
     const g = data.global || {};
@@ -281,10 +298,10 @@ async function handleRank(interaction) {
   await interaction.deferReply();
 
   try {
-    const data = await apiGet('/bridge', { player: player.name, platform: player.platform });
+    const data = await findPlayer(player.name, player.platform);
 
     if (data.Error) {
-      return interaction.editReply(`Player **${player.name}** not found.`);
+      return interaction.editReply(`Player **${player.name}** not found on any platform.`);
     }
 
     const g = data.global || {};
@@ -362,9 +379,9 @@ async function handleLink(interaction) {
   await interaction.deferReply({ ephemeral: true });
 
   try {
-    const data = await apiGet('/bridge', { player: name, platform });
+    const data = await findPlayer(name, platform);
     if (data.Error) {
-      return interaction.editReply(`Player **${name}** not found on ${platform}. Check the spelling.`);
+      return interaction.editReply(`Player **${name}** not found on any platform. Check the spelling.`);
     }
 
     const links = loadLinks();
@@ -480,8 +497,8 @@ async function handleCompare(interaction) {
 
   try {
     const [d1, d2] = await Promise.all([
-      apiGet('/bridge', { player: p1Name, platform }),
-      apiGet('/bridge', { player: p2Name, platform }),
+      findPlayer(p1Name, platform),
+      findPlayer(p2Name, platform),
     ]);
 
     if (d1.Error) return interaction.editReply(`Player **${p1Name}** not found.`);

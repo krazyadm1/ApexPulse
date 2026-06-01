@@ -57,6 +57,7 @@ contextBridge.exposeInMainWorld('apexPulse', {
     const validChannels = [
       'link-origin-manual',
       'get-auth-state',
+      'export-data',
     ];
     if (validChannels.includes(channel)) {
       return ipcRenderer.invoke(channel, data);

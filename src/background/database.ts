@@ -294,6 +294,25 @@ function dbRowToMatchRecord(row: DbMatchRow): MatchRecord {
   };
 }
 
+// === Export ===
+
+export function exportAllData(): { matches: MatchRecord[]; sessions: SessionData[]; weaponStats: ReturnType<typeof getWeaponStats>; legendStats: ReturnType<typeof getLegendStats>; overallStats: ReturnType<typeof getOverallStats> } {
+  const d = requireDb();
+  const matchRows = d.prepare('SELECT * FROM matches ORDER BY timestamp DESC').all() as DbMatchRow[];
+  const sessionRows = d.prepare('SELECT * FROM sessions ORDER BY start_time DESC').all() as DbSessionRow[];
+  return {
+    matches: matchRows.map(dbRowToMatchRecord),
+    sessions: sessionRows.map(r => ({
+      id: r.id, startTime: r.start_time, endTime: r.end_time,
+      matchesPlayed: r.matches_played, totalKills: r.total_kills,
+      totalDamage: r.total_damage, totalRpChange: r.total_rp_change,
+    })),
+    weaponStats: getWeaponStats(),
+    legendStats: getLegendStats(),
+    overallStats: getOverallStats(),
+  };
+}
+
 // === Cleanup ===
 
 export function closeDatabase(): void {

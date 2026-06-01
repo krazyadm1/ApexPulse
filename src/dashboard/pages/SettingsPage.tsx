@@ -194,8 +194,16 @@ export default function SettingsPage() {
   }
 
   // ── Export ──
-  function handleExport() {
-    alert('Export coming soon');
+  const [exporting, setExporting] = useState(false);
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const api = getApi();
+      if (!api) return;
+      const result = await api.invoke('export-data') as { success: boolean; path?: string };
+      if (result?.success) alert(`Exported to ${result.path}`);
+    } catch { /* user cancelled */ }
+    setExporting(false);
   }
 
   // ────────────────────────────────────────────────────────────────────────────
@@ -455,9 +463,10 @@ export default function SettingsPage() {
           </div>
           <button
             onClick={handleExport}
-            className="border border-white/10 px-4 py-2 rounded-lg hover:bg-white/5 text-white/70 text-sm"
+            disabled={exporting}
+            className="border border-white/10 px-4 py-2 rounded-lg hover:bg-white/5 text-white/70 text-sm disabled:opacity-40"
           >
-            Export Data
+            {exporting ? 'Exporting...' : 'Export Data'}
           </button>
         </div>
 

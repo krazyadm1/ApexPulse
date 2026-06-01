@@ -1,7 +1,7 @@
 import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen, shell, Tray, Menu, nativeImage } from 'electron';
 import { execFile } from 'child_process';
 import path from 'path';
-import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, setUserDataPath } from '../background/database';
+import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, setUserDataPath, exportAllData } from '../background/database';
 import { initGep, registerCallbacks, onGameRunningChange, cleanup as cleanupGep } from '../background/gep-manager';
 import {
   setPlayerName, handleMatchStateChange, handleKillFeed, handleKill,
@@ -284,6 +284,19 @@ function setupIpcHandlers(): void {
 
   ipcMain.handle('get-auth-state', () => {
     return broadcastCurrentAuthState();
+  });
+
+  ipcMain.handle('export-data', async () => {
+    const { dialog } = require('electron');
+    const fs = require('fs');
+    const result = await dialog.showSaveDialog(dashboardWindow!, {
+      defaultPath: `ApexPulse-Export-${new Date().toISOString().slice(0, 10)}.json`,
+      filters: [{ name: 'JSON', extensions: ['json'] }],
+    });
+    if (result.canceled || !result.filePath) return { success: false };
+    const data = exportAllData();
+    fs.writeFileSync(result.filePath, JSON.stringify(data, null, 2), 'utf-8');
+    return { success: true, path: result.filePath };
   });
 
   ipcMain.on('update-settings', (_event: unknown, ...args: unknown[]) => {

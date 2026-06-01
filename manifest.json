@@ -7,6 +7,7 @@
     "minimum-overwolf-version": "0.230.0",
     "author": "Campers Construction LLC",
     "icon": "assets/icons/icon.png",
+    "icon_gray": "assets/icons/icon_gray.png",
     "launcher_icon": "assets/icons/launcher_icon.ico",
     "description": "The Apex Legends tracker that actually works."
   },
@@ -26,7 +27,10 @@
         "desktop_only": true,
         "native_window": false,
         "size": { "width": 1200, "height": 800 },
-        "min_size": { "width": 900, "height": 600 }
+        "min_size": { "width": 900, "height": 600 },
+        "block_top_window_navigation": true,
+        "popup_blocker": true,
+        "mute": true
       },
       "overlay": {
         "file": "overlay.html",
@@ -36,7 +40,10 @@
         "start_position": { "top": 10, "left": 10 },
         "topmost": true,
         "transparent": true,
-        "clickthrough": true
+        "clickthrough": true,
+        "block_top_window_navigation": true,
+        "popup_blocker": true,
+        "mute": true
       }
     },
     "game_events": [

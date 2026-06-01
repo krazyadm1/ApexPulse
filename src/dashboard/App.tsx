@@ -15,6 +15,7 @@ import FaqPage from './pages/FaqPage';
 import WelcomePage from './pages/WelcomePage';
 import PostMatchSummary from './components/PostMatchSummary';
 import RatingPrompt from './components/RatingPrompt';
+import OfflineBanner from './components/OfflineBanner';
 import { MatchRecord } from '../shared/types';
 
 type Page = 'Home' | 'Stats' | 'Weapons' | 'Legends' | 'History' | 'Maps' | 'FAQ' | 'Settings';
@@ -134,6 +135,7 @@ const App: React.FC = () => {
 
   return (
     <div className="flex h-screen bg-apex-dark text-white">
+      <OfflineBanner />
       {errorToast && (
         <div className="fixed top-4 right-4 z-50 max-w-sm bg-red-500/10 border border-red-500/30 text-red-400 text-sm rounded-lg px-4 py-3 flex items-start gap-3 shadow-lg">
           <span className="shrink-0 mt-0.5">!</span>

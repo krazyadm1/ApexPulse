@@ -436,9 +436,9 @@ async function initApp(): Promise<void> {
   const settings = loadSettings();
   if (settings.apiKey) setApiKey(settings.apiKey);
 
-  const { DISCORD_CLIENT_ID } = require('../shared/constants');
+  const { DISCORD_CLIENT_ID, STEAM_API_KEY } = require('../shared/constants');
   initAuth({
-    steamApiKey: settings.steamApiKey ?? '',
+    steamApiKey: STEAM_API_KEY,
     discordClientId: DISCORD_CLIENT_ID,
   });
   startAuthServer();

@@ -13,6 +13,7 @@ export const API_ENDPOINTS = {
 
 export const STEAM_OPENID_URL = 'https://steamcommunity.com/openid/login';
 export const STEAM_API_BASE = 'https://api.steampowered.com';
+export const STEAM_API_KEY = 'E9B87EE8861C9CD3B32B99D8561AE50E';
 export const DISCORD_API_BASE = 'https://discord.com/api/v10';
 export const DISCORD_AUTH_URL = 'https://discord.com/api/oauth2/authorize';
 export const DISCORD_TOKEN_URL = 'https://discord.com/api/oauth2/token';

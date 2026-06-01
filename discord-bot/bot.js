@@ -111,6 +111,17 @@ const commands = [
       { name: 'Level', value: 'level' },
       { name: 'Rank', value: 'rank' },
     )),
+
+  new SlashCommandBuilder()
+    .setName('compare')
+    .setDescription('Compare two players side by side')
+    .addStringOption(opt => opt.setName('player1').setDescription('First player').setRequired(true))
+    .addStringOption(opt => opt.setName('player2').setDescription('Second player').setRequired(true))
+    .addStringOption(opt => opt.setName('platform').setDescription('Platform').addChoices(
+      { name: 'PC', value: 'PC' },
+      { name: 'PlayStation', value: 'PS4' },
+      { name: 'Xbox', value: 'X1' },
+    )),
 ];
 
 // ─── Reaction Role Config ────────────────────────────────────────────────────
@@ -460,6 +471,62 @@ async function handleCredits(interaction) {
   return interaction.reply({ embeds: [embed] });
 }
 
+async function handleCompare(interaction) {
+  const p1Name = interaction.options.getString('player1');
+  const p2Name = interaction.options.getString('player2');
+  const platform = interaction.options.getString('platform') || 'PC';
+
+  await interaction.deferReply();
+
+  try {
+    const [d1, d2] = await Promise.all([
+      apiGet('/bridge', { player: p1Name, platform }),
+      apiGet('/bridge', { player: p2Name, platform }),
+    ]);
+
+    if (d1.Error) return interaction.editReply(`Player **${p1Name}** not found.`);
+    if (d2.Error) return interaction.editReply(`Player **${p2Name}** not found.`);
+
+    const g1 = d1.global || {};
+    const g2 = d2.global || {};
+    const t1 = d1.total || {};
+    const t2 = d2.total || {};
+    const r1 = g1.rank || {};
+    const r2 = g2.rank || {};
+
+    const fmt = (v) => v != null ? v.toLocaleString() : '—';
+
+    const embed = new EmbedBuilder()
+      .setColor(0x00D4FF)
+      .setTitle(`${g1.name || p1Name}  vs  ${g2.name || p2Name}`)
+      .addFields(
+        { name: 'Level', value: `**${g1.level || 0}** vs **${g2.level || 0}**`, inline: false },
+        { name: g1.name || p1Name, value: [
+          `Kills: **${fmt(t1.kills?.value)}**`,
+          `Damage: **${fmt(t1.damage?.value)}**`,
+          `Wins: **${fmt(t1.wins?.value)}**`,
+          `K/D: **${t1.kd?.value ?? '—'}**`,
+          `Rank: **${r1.rankName || 'Unranked'} ${r1.rankDiv || ''}**`,
+          `RP: **${fmt(r1.rankScore)}**`,
+        ].join('\n'), inline: true },
+        { name: g2.name || p2Name, value: [
+          `Kills: **${fmt(t2.kills?.value)}**`,
+          `Damage: **${fmt(t2.damage?.value)}**`,
+          `Wins: **${fmt(t2.wins?.value)}**`,
+          `K/D: **${t2.kd?.value ?? '—'}**`,
+          `Rank: **${r2.rankName || 'Unranked'} ${r2.rankDiv || ''}**`,
+          `RP: **${fmt(r2.rankScore)}**`,
+        ].join('\n'), inline: true },
+      )
+      .setFooter({ text: `${platform} | ApexPulse` })
+      .setTimestamp();
+
+    return interaction.editReply({ embeds: [embed] });
+  } catch (err) {
+    return interaction.editReply(`API error: ${err.message}`);
+  }
+}
+
 // ─── Event Handlers ──────────────────────────────────────────────────────────
 
 client.once('ready', async () => {
@@ -535,6 +602,7 @@ client.on('interactionCreate', async (interaction) => {
       case 'unlink': return await handleUnlink(interaction);
       case 'leaderboard': return await handleLeaderboard(interaction);
       case 'credits': return await handleCredits(interaction);
+      case 'compare': return await handleCompare(interaction);
     }
   } catch (err) {
     console.error(`Command error (${interaction.commandName}):`, err);

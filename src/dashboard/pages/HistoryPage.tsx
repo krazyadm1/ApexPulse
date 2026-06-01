@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useMatchStore } from '../../stores/matchStore';
-import { WEAPON_MAP } from '../../shared/weapon-map';
 import { LEGENDS } from '../../shared/legend-map';
 import { GameMode, MatchRecord } from '../../shared/types';
+import MatchDetail from '../components/MatchDetail';
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -29,18 +29,8 @@ function formatMode(mode: GameMode): string {
   return MODE_LABELS[mode] ?? mode;
 }
 
-function formatDuration(seconds: number): string {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${m}:${String(s).padStart(2, '0')}`;
-}
-
 function getLegendDisplayName(legendId: string): string {
   return LEGENDS[legendId.toLowerCase()]?.displayName ?? legendId;
-}
-
-function getWeaponDisplayName(weaponKey: string): string {
-  return WEAPON_MAP[weaponKey.toLowerCase()]?.display ?? weaponKey;
 }
 
 // ---------------------------------------------------------------------------
@@ -70,108 +60,6 @@ function PlacementBadge({ placement }: PlacementBadgeProps) {
       title={isValid ? `Placement: #${placement}` : 'Placement unknown'}
     >
       {isValid ? `#${placement}` : '?'}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Expanded detail panel
-// ---------------------------------------------------------------------------
-
-interface ExpandedPanelProps {
-  match: MatchRecord;
-}
-
-function ExpandedPanel({ match }: ExpandedPanelProps) {
-  const isRanked = match.gameMode === 'ranked_br';
-
-  return (
-    <div className="mt-4 pt-4 border-t border-[var(--border)] grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-
-      {/* Duration */}
-      <div className="flex flex-col gap-1">
-        <span className="text-[var(--text-secondary)] uppercase text-xs tracking-wider font-mono">Duration</span>
-        <span className="text-[var(--text-primary)]font-mono">
-          {match.duration > 0 ? formatDuration(match.duration) : '—'}
-        </span>
-      </div>
-
-      {/* Win badge */}
-      {match.isWin && (
-        <div className="flex items-center">
-          <span className="px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-400 font-mono font-bold text-xs border border-yellow-500/40 uppercase tracking-widest">
-            Champion
-          </span>
-        </div>
-      )}
-
-      {/* Ranked RP */}
-      {isRanked && match.rpChange !== undefined && match.rpChange !== null && (
-        <div className="flex flex-col gap-1">
-          <span className="text-[var(--text-secondary)] uppercase text-xs tracking-wider font-mono">RP Change</span>
-          <span
-            className={`font-mono font-bold text-base ${
-              match.rpChange >= 0 ? 'text-green-400' : 'text-red-400'
-            }`}
-          >
-            {match.rpChange >= 0 ? '+' : ''}
-            {match.rpChange} RP
-          </span>
-          {match.rankBefore && match.rankAfter && (
-            <span className="text-[var(--text-muted)] text-xs font-mono">
-              {match.rankBefore} → {match.rankAfter}
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Weapons */}
-      {match.weaponKills.length > 0 && (
-        <div className="flex flex-col gap-1 sm:col-span-2">
-          <span className="text-[var(--text-secondary)] uppercase text-xs tracking-wider font-mono">Weapons Used</span>
-          <div className="flex flex-wrap gap-2">
-            {match.weaponKills.map((wk, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--hover)] border border-[var(--border)]"
-              >
-                <span className="text-[var(--text-primary)]font-mono text-xs">
-                  {getWeaponDisplayName(wk.weaponName)}
-                </span>
-                <span className="text-apex-cyan font-mono font-bold text-xs">
-                  {wk.kills}K
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Teammates */}
-      {match.teammates.length > 0 && (
-        <div className="flex flex-col gap-2 sm:col-span-2">
-          <span className="text-[var(--text-secondary)] uppercase text-xs tracking-wider font-mono">Teammates</span>
-          <div className="flex flex-col gap-1.5">
-            {match.teammates.map((tm, idx) => (
-              <div
-                key={idx}
-                className="flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--hover)] border border-[var(--border)]"
-              >
-                <div className="flex items-center gap-3">
-                  <span className="text-[var(--text-primary)]font-mono text-sm">{tm.name}</span>
-                  <span className="text-[var(--text-secondary)] text-xs font-mono">
-                    {getLegendDisplayName(tm.legend)}
-                  </span>
-                  <span className="text-[var(--text-muted)] text-xs font-mono uppercase">{tm.platform}</span>
-                </div>
-                <div className={`text-xs font-mono ${tm.survived ? 'text-green-400' : 'text-red-400'}`}>
-                  {tm.survived ? 'Survived' : 'Eliminated'}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
@@ -254,8 +142,6 @@ function MatchCard({ match, isExpanded, onToggle }: MatchCardProps) {
         </div>
       </div>
 
-      {/* Expanded panel */}
-      {isExpanded && <ExpandedPanel match={match} />}
     </div>
   );
 }
@@ -267,7 +153,7 @@ function MatchCard({ match, isExpanded, onToggle }: MatchCardProps) {
 export default function HistoryPage() {
   const recentMatches = useMatchStore((s) => s.recentMatches);
 
-  const [expandedMatchId, setExpandedMatchId] = React.useState<string | null>(null);
+  const [selectedMatchId, setSelectedMatchId] = useState<string | null>(null);
   const [modeFilter, setModeFilter] = React.useState<string>('all');
   const [legendFilter, setLegendFilter] = React.useState<string>('all');
 
@@ -363,16 +249,20 @@ export default function HistoryPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {filteredMatches.map((match) => (
-            <MatchCard
-              key={match.matchId}
-              match={match}
-              isExpanded={expandedMatchId === match.matchId}
-              onToggle={() =>
-                setExpandedMatchId(
-                  expandedMatchId === match.matchId ? null : match.matchId
-                )
-              }
-            />
+            <React.Fragment key={match.matchId}>
+              <MatchCard
+                match={match}
+                isExpanded={selectedMatchId === match.matchId}
+                onToggle={() =>
+                  setSelectedMatchId(
+                    selectedMatchId === match.matchId ? null : match.matchId
+                  )
+                }
+              />
+              {selectedMatchId === match.matchId && (
+                <MatchDetail match={match} onClose={() => setSelectedMatchId(null)} />
+              )}
+            </React.Fragment>
           ))}
         </div>
       )}

@@ -4,19 +4,37 @@
   --color-apex-cyan: #00E5FF;
   --color-apex-navy: #0A1628;
   --color-apex-dark: #050B14;
-  
+
   --font-sans: "Inter", "sans-serif";
   --font-mono: "JetBrains Mono", "monospace";
 }
 
 @layer base {
+  :root {
+    --bg-primary: #050B14;
+    --bg-secondary: #0A1628;
+    --bg-card: rgba(10,22,40,0.5);
+    --text-primary: #FFFFFF;
+    --text-secondary: rgba(255,255,255,0.6);
+    --text-muted: rgba(255,255,255,0.3);
+    --border: rgba(255,255,255,0.1);
+    --accent: #00E5FF;
+    --hover: rgba(0,229,255,0.04);
+  }
+
   body {
-    @apply bg-apex-dark text-white font-sans;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--font-sans);
   }
 }
 
 @layer components {
   .glass-card {
-    @apply bg-apex-navy/50 backdrop-blur-md border border-white/10 rounded-lg p-4;
+    background: var(--bg-card);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border);
+    border-radius: 0.5rem;
+    padding: 1rem;
   }
 }

@@ -43,6 +43,7 @@ export const DEFAULT_SETTINGS: import('./types').AppSettings = {
   sessionTimeoutMs: SESSION_TIMEOUT_MS,
   consentAccepted: false,
   hardwareAcceleration: true,
+  theme: 'dark' as const,
 };
 
 export const DONATION_URL = 'https://ko-fi.com/apexpulse';

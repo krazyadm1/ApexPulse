@@ -372,6 +372,7 @@ export interface AppSettings {
   sessionTimeoutMs: number;
   consentAccepted: boolean;
   hardwareAcceleration: boolean;
+  theme: 'dark' | 'light';
 }
 
 // === Auth Types ===

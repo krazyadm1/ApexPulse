@@ -55,13 +55,13 @@ function PlacementBadge({ placement }: PlacementBadgeProps) {
   const isValid = placement > 0;
   let bgClass: string;
   if (!isValid) {
-    bgClass = 'bg-white/10 text-white';
+    bgClass = 'bg-[var(--hover)] text-[var(--text-primary)]';
   } else if (placement === 1) {
     bgClass = 'bg-yellow-500 text-black';
   } else if (placement <= 5) {
     bgClass = 'bg-apex-cyan text-apex-navy';
   } else {
-    bgClass = 'bg-white/10 text-white';
+    bgClass = 'bg-[var(--hover)] text-[var(--text-primary)]';
   }
 
   return (
@@ -86,12 +86,12 @@ function ExpandedPanel({ match }: ExpandedPanelProps) {
   const isRanked = match.gameMode === 'ranked_br';
 
   return (
-    <div className="mt-4 pt-4 border-t border-white/10 grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+    <div className="mt-4 pt-4 border-t border-[var(--border)] grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
 
       {/* Duration */}
       <div className="flex flex-col gap-1">
-        <span className="text-white/50 uppercase text-xs tracking-wider font-mono">Duration</span>
-        <span className="text-white font-mono">
+        <span className="text-[var(--text-secondary)] uppercase text-xs tracking-wider font-mono">Duration</span>
+        <span className="text-[var(--text-primary)]font-mono">
           {match.duration > 0 ? formatDuration(match.duration) : '—'}
         </span>
       </div>
@@ -108,7 +108,7 @@ function ExpandedPanel({ match }: ExpandedPanelProps) {
       {/* Ranked RP */}
       {isRanked && match.rpChange !== undefined && match.rpChange !== null && (
         <div className="flex flex-col gap-1">
-          <span className="text-white/50 uppercase text-xs tracking-wider font-mono">RP Change</span>
+          <span className="text-[var(--text-secondary)] uppercase text-xs tracking-wider font-mono">RP Change</span>
           <span
             className={`font-mono font-bold text-base ${
               match.rpChange >= 0 ? 'text-green-400' : 'text-red-400'
@@ -118,7 +118,7 @@ function ExpandedPanel({ match }: ExpandedPanelProps) {
             {match.rpChange} RP
           </span>
           {match.rankBefore && match.rankAfter && (
-            <span className="text-white/40 text-xs font-mono">
+            <span className="text-[var(--text-muted)] text-xs font-mono">
               {match.rankBefore} → {match.rankAfter}
             </span>
           )}
@@ -128,14 +128,14 @@ function ExpandedPanel({ match }: ExpandedPanelProps) {
       {/* Weapons */}
       {match.weaponKills.length > 0 && (
         <div className="flex flex-col gap-1 sm:col-span-2">
-          <span className="text-white/50 uppercase text-xs tracking-wider font-mono">Weapons Used</span>
+          <span className="text-[var(--text-secondary)] uppercase text-xs tracking-wider font-mono">Weapons Used</span>
           <div className="flex flex-wrap gap-2">
             {match.weaponKills.map((wk, idx) => (
               <div
                 key={idx}
-                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/10"
+                className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--hover)] border border-[var(--border)]"
               >
-                <span className="text-white font-mono text-xs">
+                <span className="text-[var(--text-primary)]font-mono text-xs">
                   {getWeaponDisplayName(wk.weaponName)}
                 </span>
                 <span className="text-apex-cyan font-mono font-bold text-xs">
@@ -150,19 +150,19 @@ function ExpandedPanel({ match }: ExpandedPanelProps) {
       {/* Teammates */}
       {match.teammates.length > 0 && (
         <div className="flex flex-col gap-2 sm:col-span-2">
-          <span className="text-white/50 uppercase text-xs tracking-wider font-mono">Teammates</span>
+          <span className="text-[var(--text-secondary)] uppercase text-xs tracking-wider font-mono">Teammates</span>
           <div className="flex flex-col gap-1.5">
             {match.teammates.map((tm, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between px-3 py-2 rounded-lg bg-white/5 border border-white/10"
+                className="flex items-center justify-between px-3 py-2 rounded-lg bg-[var(--hover)] border border-[var(--border)]"
               >
                 <div className="flex items-center gap-3">
-                  <span className="text-white font-mono text-sm">{tm.name}</span>
-                  <span className="text-white/50 text-xs font-mono">
+                  <span className="text-[var(--text-primary)]font-mono text-sm">{tm.name}</span>
+                  <span className="text-[var(--text-secondary)] text-xs font-mono">
                     {getLegendDisplayName(tm.legend)}
                   </span>
-                  <span className="text-white/30 text-xs font-mono uppercase">{tm.platform}</span>
+                  <span className="text-[var(--text-muted)] text-xs font-mono uppercase">{tm.platform}</span>
                 </div>
                 <div className={`text-xs font-mono ${tm.survived ? 'text-green-400' : 'text-red-400'}`}>
                   {tm.survived ? 'Survived' : 'Eliminated'}
@@ -189,7 +189,7 @@ interface MatchCardProps {
 function MatchCard({ match, isExpanded, onToggle }: MatchCardProps) {
   return (
     <div
-      className="glass-card p-4 cursor-pointer select-none transition-colors hover:border-white/20"
+      className="glass-card p-4 cursor-pointer select-none transition-colors hover:border-[var(--border)]"
       onClick={onToggle}
       role="button"
       aria-expanded={isExpanded}
@@ -202,21 +202,21 @@ function MatchCard({ match, isExpanded, onToggle }: MatchCardProps) {
         {/* Center info */}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-white font-mono font-semibold text-sm">
+            <span className="text-[var(--text-primary)]font-mono font-semibold text-sm">
               {formatMode(match.gameMode)}
             </span>
             {match.mapName && (
               <>
-                <span className="text-white/30 text-xs">·</span>
-                <span className="text-white/60 text-sm">{match.mapName}</span>
+                <span className="text-[var(--text-muted)] text-xs">·</span>
+                <span className="text-[var(--text-secondary)] text-sm">{match.mapName}</span>
               </>
             )}
-            <span className="text-white/30 text-xs">·</span>
+            <span className="text-[var(--text-muted)] text-xs">·</span>
             <span className="text-apex-cyan text-sm font-mono">
               {getLegendDisplayName(match.legend)}
             </span>
           </div>
-          <div className="text-white/40 text-xs font-mono mt-0.5">
+          <div className="text-[var(--text-muted)] text-xs font-mono mt-0.5">
             {new Date(match.timestamp).toLocaleString()}
           </div>
         </div>
@@ -224,27 +224,27 @@ function MatchCard({ match, isExpanded, onToggle }: MatchCardProps) {
         {/* Right stats */}
         <div className="flex items-center gap-5 flex-shrink-0">
           <div className="flex flex-col items-center">
-            <span className="text-white font-mono font-bold text-base leading-none">
+            <span className="text-[var(--text-primary)]font-mono font-bold text-base leading-none">
               {match.kills}
             </span>
-            <span className="text-white/40 text-xs font-mono uppercase mt-0.5">Kills</span>
+            <span className="text-[var(--text-muted)] text-xs font-mono uppercase mt-0.5">Kills</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="text-white font-mono font-bold text-base leading-none">
+            <span className="text-[var(--text-primary)]font-mono font-bold text-base leading-none">
               {match.damage.toLocaleString()}
             </span>
-            <span className="text-white/40 text-xs font-mono uppercase mt-0.5">Damage</span>
+            <span className="text-[var(--text-muted)] text-xs font-mono uppercase mt-0.5">Damage</span>
           </div>
           <div className="flex flex-col items-center">
-            <span className="text-white font-mono font-bold text-base leading-none">
+            <span className="text-[var(--text-primary)]font-mono font-bold text-base leading-none">
               {match.squadKills}
             </span>
-            <span className="text-white/40 text-xs font-mono uppercase mt-0.5">Squad</span>
+            <span className="text-[var(--text-muted)] text-xs font-mono uppercase mt-0.5">Squad</span>
           </div>
 
           {/* Expand chevron */}
           <div
-            className={`text-white/40 transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
+            className={`text-[var(--text-muted)] transition-transform duration-200 ${isExpanded ? 'rotate-180' : 'rotate-0'}`}
             aria-hidden="true"
           >
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
@@ -278,18 +278,18 @@ export default function HistoryPage() {
   });
 
   const selectClass =
-    'bg-apex-navy border border-white/10 rounded-lg px-3 py-2 text-white text-sm font-mono outline-none focus:border-apex-cyan/50 transition-colors cursor-pointer';
+    'bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-[var(--text-primary)] text-sm font-mono outline-none focus:border-apex-cyan/50 transition-colors cursor-pointer';
 
   return (
-    <div className="flex flex-col gap-6 p-6 min-h-full" style={{ background: 'var(--apex-dark, #050B14)' }}>
+    <div className="flex flex-col gap-6 p-6 min-h-full" style={{ background: 'var(--bg-primary)' }}>
 
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white font-mono tracking-tight">
+          <h1 className="text-2xl font-bold text-[var(--text-primary)] font-mono tracking-tight">
             Match History
           </h1>
-          <p className="text-white/40 text-sm font-mono mt-0.5">
+          <p className="text-[var(--text-muted)] text-sm font-mono mt-0.5">
             {filteredMatches.length === recentMatches.length
               ? `${recentMatches.length} match${recentMatches.length !== 1 ? 'es' : ''} recorded`
               : `Showing ${filteredMatches.length} of ${recentMatches.length} matches`}
@@ -306,7 +306,7 @@ export default function HistoryPage() {
             aria-label="Filter by game mode"
           >
             {FILTER_MODES.map((m) => (
-              <option key={m.value} value={m.value} style={{ background: '#0A1628' }}>
+              <option key={m.value} value={m.value} style={{ background: 'var(--bg-secondary)' }}>
                 {m.label}
               </option>
             ))}
@@ -319,11 +319,11 @@ export default function HistoryPage() {
             className={selectClass}
             aria-label="Filter by legend"
           >
-            <option value="all" style={{ background: '#0A1628' }}>All Legends</option>
+            <option value="all" style={{ background: 'var(--bg-secondary)' }}>All Legends</option>
             {Object.values(LEGENDS)
               .sort((a, b) => a.displayName.localeCompare(b.displayName))
               .map((legend) => (
-                <option key={legend.id} value={legend.id} style={{ background: '#0A1628' }}>
+                <option key={legend.id} value={legend.id} style={{ background: 'var(--bg-secondary)' }}>
                   {legend.displayName}
                 </option>
               ))}
@@ -336,7 +336,7 @@ export default function HistoryPage() {
         <div className="glass-card flex flex-col items-center justify-center gap-3 py-16 text-center">
           <div className="text-4xl opacity-30" aria-hidden="true">
             {/* Target / crosshair icon */}
-            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-white">
+            <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" strokeWidth="1.5" className="text-[var(--text-primary)]">
               <circle cx="24" cy="24" r="20" />
               <circle cx="24" cy="24" r="8" />
               <line x1="24" y1="4" x2="24" y2="16" />
@@ -345,14 +345,14 @@ export default function HistoryPage() {
               <line x1="32" y1="24" x2="44" y2="24" />
             </svg>
           </div>
-          <p className="text-white font-mono font-semibold text-base">No matches recorded yet.</p>
-          <p className="text-white/40 font-mono text-sm max-w-xs">
+          <p className="text-[var(--text-primary)]font-mono font-semibold text-base">No matches recorded yet.</p>
+          <p className="text-[var(--text-muted)] font-mono text-sm max-w-xs">
             Launch Apex Legends and play a match!
           </p>
         </div>
       ) : filteredMatches.length === 0 ? (
         <div className="glass-card flex flex-col items-center justify-center gap-3 py-12 text-center">
-          <p className="text-white/60 font-mono text-sm">No matches match the current filters.</p>
+          <p className="text-[var(--text-secondary)] font-mono text-sm">No matches match the current filters.</p>
           <button
             onClick={() => { setModeFilter('all'); setLegendFilter('all'); }}
             className="text-apex-cyan font-mono text-sm underline underline-offset-2 hover:text-apex-cyan/80 transition-colors"

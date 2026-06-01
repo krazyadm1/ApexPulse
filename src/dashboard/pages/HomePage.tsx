@@ -15,7 +15,7 @@ const HomePage: React.FC = () => {
       <header className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-3xl font-bold">Dashboard</h2>
-          <p className="text-gray-400">
+          <p className="text-[var(--text-secondary)]">
             {totalMatches > 0 ? `${totalMatches} matches tracked` : 'Welcome back, Legend.'}
           </p>
         </div>
@@ -37,8 +37,8 @@ const HomePage: React.FC = () => {
               </button>
             </CoachMark>
           )}
-          <div className="bg-apex-navy px-4 py-2 rounded-lg border border-white/10">
-            <span className="text-gray-400 text-sm">Status:</span>
+          <div className="bg-[var(--bg-secondary)] px-4 py-2 rounded-lg border border-[var(--border)]">
+            <span className="text-[var(--text-secondary)] text-sm">Status:</span>
             <span className={`ml-2 font-medium ${isLive ? 'text-green-400' : 'text-gray-500'}`}>
               {isLive ? 'In Match' : 'Idle'}
             </span>
@@ -51,11 +51,11 @@ const HomePage: React.FC = () => {
           <div className="flex justify-between items-center">
             <div className="flex items-center space-x-3">
               <span className="text-apex-cyan font-bold animate-pulse">LIVE</span>
-              <span className="text-white font-bold">{liveLegend ? LEGENDS[liveLegend]?.displayName ?? liveLegend : ''}</span>
+              <span className="text-[var(--text-primary)] font-bold">{liveLegend ? LEGENDS[liveLegend]?.displayName ?? liveLegend : ''}</span>
             </div>
             <div className="flex space-x-6">
-              <div><span className="text-gray-400 text-sm">Kills:</span> <span className="font-bold ml-1">{liveKills}</span></div>
-              <div><span className="text-gray-400 text-sm">Damage:</span> <span className="font-bold ml-1">{liveDamage.toLocaleString()}</span></div>
+              <div><span className="text-[var(--text-secondary)] text-sm">Kills:</span> <span className="font-bold ml-1">{liveKills}</span></div>
+              <div><span className="text-[var(--text-secondary)] text-sm">Damage:</span> <span className="font-bold ml-1">{liveDamage.toLocaleString()}</span></div>
             </div>
           </div>
         </div>
@@ -72,10 +72,10 @@ const HomePage: React.FC = () => {
         <h3 className="text-xl font-bold mb-4">Recent Matches</h3>
         <div className="space-y-4">
           {recentMatches.length === 0 ? (
-            <p className="text-gray-400 text-center py-8">No matches tracked yet. Launch Apex Legends to start!</p>
+            <p className="text-[var(--text-secondary)] text-center py-8">No matches tracked yet. Launch Apex Legends to start!</p>
           ) : (
             recentMatches.slice(0, 10).map((match) => (
-              <div key={match.matchId} className="flex items-center justify-between p-4 bg-white/5 rounded-lg border border-white/5">
+              <div key={match.matchId} className="flex items-center justify-between p-4 bg-[var(--hover)] rounded-lg border border-[var(--border)]">
                 <div className="flex items-center space-x-4">
                   <div className={`w-12 h-12 rounded-full flex items-center justify-center font-bold ${
                     match.isWin ? 'bg-yellow-500/20 text-yellow-400' : 'bg-apex-cyan/20 text-apex-cyan'
@@ -86,23 +86,23 @@ const HomePage: React.FC = () => {
                     <div className="font-bold">
                       {match.gameMode.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())} — {match.mapName}
                     </div>
-                    <div className="text-sm text-gray-400">
+                    <div className="text-sm text-[var(--text-secondary)]">
                       {new Date(match.timestamp).toLocaleString()} &bull; {LEGENDS[match.legend]?.displayName ?? match.legend}
                     </div>
                   </div>
                 </div>
                 <div className="flex space-x-8 text-right">
                   <div>
-                    <div className="text-sm text-gray-400">Kills</div>
+                    <div className="text-sm text-[var(--text-secondary)]">Kills</div>
                     <div className="font-bold font-mono">{match.kills}</div>
                   </div>
                   <div>
-                    <div className="text-sm text-gray-400">Damage</div>
+                    <div className="text-sm text-[var(--text-secondary)]">Damage</div>
                     <div className="font-bold font-mono">{match.damage.toLocaleString()}</div>
                   </div>
                   {match.weaponKills.length > 0 && (
                     <div>
-                      <div className="text-sm text-gray-400">Top Weapon</div>
+                      <div className="text-sm text-[var(--text-secondary)]">Top Weapon</div>
                       <div className="font-bold text-apex-cyan">
                         {WEAPON_MAP[match.weaponKills[0].weaponName]?.display ?? match.weaponKills[0].weaponName}
                       </div>
@@ -120,7 +120,7 @@ const HomePage: React.FC = () => {
 
 const StatCard: React.FC<{ title: string; value: string; tooltip?: string }> = ({ title, value, tooltip }) => (
   <div className="glass-card">
-    <div className="text-gray-400 text-sm mb-1">
+    <div className="text-[var(--text-secondary)] text-sm mb-1">
       {tooltip ? (
         <Tooltip text={tooltip}><span className="cursor-help border-b border-dotted border-gray-600">{title}</span></Tooltip>
       ) : (

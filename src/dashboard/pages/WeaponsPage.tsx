@@ -70,7 +70,7 @@ function CustomBarTooltip({ active, payload, label }: CustomTooltipProps) {
       style={{ padding: '8px 14px', border: '1px solid rgba(0,229,255,0.25)' }}
     >
       <p style={{ color: '#00E5FF', margin: 0, fontSize: 13 }}>{label}</p>
-      <p style={{ color: '#fff', margin: '2px 0 0', fontSize: 13 }}>
+      <p style={{ color: 'var(--text-primary)', margin: '2px 0 0', fontSize: 13 }}>
         Kills: <span className="font-mono">{payload[0].value}</span>
       </p>
     </div>
@@ -111,18 +111,18 @@ function CategoryCard({
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Total Kills</span>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Total Kills</span>
           <span
             className="font-mono"
-            style={{ color: '#fff', fontSize: 22, fontWeight: 700 }}
+            style={{ color: 'var(--text-primary)', fontSize: 22, fontWeight: 700 }}
           >
             {totalKills.toLocaleString()}
           </span>
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Weapons Used</span>
-          <span className="font-mono" style={{ color: 'rgba(255,255,255,0.8)', fontSize: 15 }}>
+          <span style={{ color: 'var(--text-secondary)', fontSize: 12 }}>Weapons Used</span>
+          <span className="font-mono" style={{ color: 'var(--text-primary)', fontSize: 15 }}>
             {weaponsUsed}
           </span>
         </div>
@@ -137,10 +137,10 @@ function CategoryCard({
               borderLeft: '2px solid #00E5FF',
             }}
           >
-            <div style={{ color: 'rgba(255,255,255,0.45)', fontSize: 11, marginBottom: 2 }}>
+            <div style={{ color: 'var(--text-muted)', fontSize: 11, marginBottom: 2 }}>
               Best Weapon
             </div>
-            <div style={{ color: '#fff', fontSize: 13, fontWeight: 600 }}>{bestWeapon}</div>
+            <div style={{ color: 'var(--text-primary)', fontSize: 13, fontWeight: 600 }}>{bestWeapon}</div>
             <div
               className="font-mono"
               style={{ color: '#00E5FF', fontSize: 12, marginTop: 1 }}
@@ -286,7 +286,7 @@ export default function WeaponsPage() {
   }
 
   function sortIndicator(col: SortColumn) {
-    if (sortCol !== col) return <span style={{ color: 'rgba(255,255,255,0.2)' }}> ↕</span>;
+    if (sortCol !== col) return <span style={{ color: 'var(--text-muted)' }}> ↕</span>;
     return (
       <span style={{ color: '#00E5FF' }}>{sortDir === 'asc' ? ' ↑' : ' ↓'}</span>
     );
@@ -296,7 +296,7 @@ export default function WeaponsPage() {
   const thStyle: React.CSSProperties = {
     padding: '10px 14px',
     textAlign: 'left',
-    color: 'rgba(255,255,255,0.45)',
+    color: 'var(--text-muted)',
     fontSize: 11,
     fontWeight: 600,
     letterSpacing: '0.07em',
@@ -304,26 +304,26 @@ export default function WeaponsPage() {
     cursor: 'pointer',
     userSelect: 'none',
     whiteSpace: 'nowrap',
-    borderBottom: '1px solid rgba(255,255,255,0.06)',
+    borderBottom: '1px solid var(--border)',
   };
 
   const tdStyle: React.CSSProperties = {
     padding: '11px 14px',
-    borderBottom: '1px solid rgba(255,255,255,0.04)',
+    borderBottom: '1px solid var(--border)',
     fontSize: 13,
-    color: 'rgba(255,255,255,0.85)',
+    color: 'var(--text-primary)',
   };
 
   // ────────────────────────────────────────────────────────────────────────────
   return (
-    <div style={{ padding: '24px 28px', minHeight: '100vh', background: '#050B14' }}>
+    <div style={{ padding: '24px 28px', minHeight: '100vh', background: 'var(--bg-primary)' }}>
 
       {/* ── Empty State ── */}
       {weaponStats.length === 0 && (
         <div className="glass-card flex flex-col items-center justify-center py-16 text-center" style={{ marginBottom: 24 }}>
           <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.4 }}>🔫</div>
-          <p className="text-white font-mono font-semibold text-base" style={{ margin: '0 0 4px' }}>No weapon data yet</p>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, margin: 0 }}>Play some matches and your weapon stats will appear here.</p>
+          <p className="text-[var(--text-primary)] font-mono font-semibold text-base" style={{ margin: '0 0 4px' }}>No weapon data yet</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>Play some matches and your weapon stats will appear here.</p>
         </div>
       )}
 
@@ -339,7 +339,7 @@ export default function WeaponsPage() {
       >
         <h1
           style={{
-            color: '#fff',
+            color: 'var(--text-primary)',
             fontSize: 22,
             fontWeight: 700,
             letterSpacing: '0.02em',
@@ -363,9 +363,9 @@ export default function WeaponsPage() {
                   borderRadius: 6,
                   border: isActive
                     ? '1px solid rgba(0,229,255,0.45)'
-                    : '1px solid rgba(255,255,255,0.1)',
+                    : '1px solid var(--border)',
                   background: isActive ? 'rgba(0,229,255,0.2)' : 'transparent',
-                  color: isActive ? '#00E5FF' : 'rgba(255,255,255,0.55)',
+                  color: isActive ? '#00E5FF' : 'var(--text-secondary)',
                   fontSize: 12,
                   fontWeight: 600,
                   cursor: 'pointer',
@@ -383,7 +383,7 @@ export default function WeaponsPage() {
       <div className="glass-card" style={{ padding: '20px 20px 10px', marginBottom: 24 }}>
         <h2
           style={{
-            color: 'rgba(255,255,255,0.7)',
+            color: 'var(--text-secondary)',
             fontSize: 13,
             fontWeight: 600,
             letterSpacing: '0.07em',
@@ -401,7 +401,7 @@ export default function WeaponsPage() {
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'rgba(255,255,255,0.3)',
+              color: 'var(--text-muted)',
               fontSize: 13,
             }}
           >
@@ -446,7 +446,7 @@ export default function WeaponsPage() {
         <div style={{ marginBottom: 24 }}>
           <h2
             style={{
-              color: 'rgba(255,255,255,0.7)',
+              color: 'var(--text-secondary)',
               fontSize: 13,
               fontWeight: 600,
               letterSpacing: '0.07em',
@@ -472,10 +472,10 @@ export default function WeaponsPage() {
 
       {/* ── Weapons Table ── */}
       <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <div style={{ padding: '16px 20px 12px', borderBottom: '1px solid var(--border)' }}>
           <h2
             style={{
-              color: 'rgba(255,255,255,0.7)',
+              color: 'var(--text-secondary)',
               fontSize: 13,
               fontWeight: 600,
               letterSpacing: '0.07em',
@@ -492,7 +492,7 @@ export default function WeaponsPage() {
             style={{
               padding: '48px 24px',
               textAlign: 'center',
-              color: 'rgba(255,255,255,0.35)',
+              color: 'var(--text-muted)',
               fontSize: 13,
             }}
           >
@@ -544,8 +544,8 @@ export default function WeaponsPage() {
                       (e.currentTarget as HTMLTableRowElement).style.background = 'transparent';
                     }}
                   >
-                    <td style={{ ...tdStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>{index + 1}</td>
-                    <td style={{ ...tdStyle, color: '#fff', fontWeight: 600 }}>
+                    <td style={{ ...tdStyle, textAlign: 'center', color: 'var(--text-muted)', fontFamily: 'monospace' }}>{index + 1}</td>
+                    <td style={{ ...tdStyle, color: 'var(--text-primary)', fontWeight: 600 }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         {row.icon && (
                           <img
@@ -558,7 +558,7 @@ export default function WeaponsPage() {
                         {row.display}
                       </div>
                     </td>
-                    <td style={{ ...tdStyle, color: 'rgba(255,255,255,0.55)', fontSize: 12 }}>
+                    <td style={{ ...tdStyle, color: 'var(--text-secondary)', fontSize: 12 }}>
                       {row.category}
                     </td>
                     <td style={{ ...tdStyle }}>
@@ -567,17 +567,17 @@ export default function WeaponsPage() {
                       </span>
                     </td>
                     <td style={{ ...tdStyle }}>
-                      <span className="font-mono" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                      <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>
                         {row.knockdowns.toLocaleString()}
                       </span>
                     </td>
                     <td style={{ ...tdStyle }}>
-                      <span className="font-mono" style={{ color: 'rgba(255,255,255,0.7)' }}>
+                      <span className="font-mono" style={{ color: 'var(--text-secondary)' }}>
                         {row.matchesUsed.toLocaleString()}
                       </span>
                     </td>
                     <td style={{ ...tdStyle }}>
-                      <span className="font-mono" style={{ color: 'rgba(255,255,255,0.85)' }}>
+                      <span className="font-mono" style={{ color: 'var(--text-primary)' }}>
                         {row.killsPerMatch.toFixed(2)}
                       </span>
                     </td>

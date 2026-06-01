@@ -9,16 +9,16 @@ function FaqItem({ question, answer }: FaqItemProps) {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="border-b border-white/5 last:border-0">
+    <div className="border-b border-[var(--border)] last:border-0">
       <button
         onClick={() => setOpen(!open)}
         className="w-full flex items-center justify-between py-4 text-left hover:text-apex-cyan transition-colors"
       >
-        <span className="text-white/90 text-sm font-medium pr-4">{question}</span>
-        <span className="text-white/40 shrink-0 text-lg">{open ? '−' : '+'}</span>
+        <span className="text-[var(--text-primary)] text-sm font-medium pr-4">{question}</span>
+        <span className="text-[var(--text-muted)] shrink-0 text-lg">{open ? '−' : '+'}</span>
       </button>
       {open && (
-        <div className="pb-4 text-white/50 text-sm leading-relaxed">{answer}</div>
+        <div className="pb-4 text-[var(--text-secondary)] text-sm leading-relaxed">{answer}</div>
       )}
     </div>
   );
@@ -63,8 +63,8 @@ export default function FaqPage() {
   return (
     <div className="flex flex-col gap-6 max-w-2xl mx-auto">
       <div>
-        <h1 className="text-white font-bold text-2xl tracking-wide">FAQ</h1>
-        <p className="text-white/40 text-sm mt-1">Frequently asked questions about ApexPulse</p>
+        <h1 className="text-[var(--text-primary)] font-bold text-2xl tracking-wide">FAQ</h1>
+        <p className="text-[var(--text-muted)] text-sm mt-1">Frequently asked questions about ApexPulse</p>
       </div>
 
       <div className="glass-card p-6">
@@ -75,8 +75,8 @@ export default function FaqPage() {
 
       <div className="glass-card p-6 flex items-center justify-between">
         <div>
-          <p className="text-white/80 text-sm font-medium">Still have questions?</p>
-          <p className="text-white/40 text-xs">Get help from the community</p>
+          <p className="text-[var(--text-primary)] text-sm font-medium">Still have questions?</p>
+          <p className="text-[var(--text-muted)] text-xs">Get help from the community</p>
         </div>
         <a
           href="https://discord.gg/Pfd6ScNaSW"

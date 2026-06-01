@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { AppSettings, WindowMessage } from '../shared/types';
 import { DEFAULT_SETTINGS } from '../shared/constants';
 import { onMessage, sendToMain } from '../background/messaging';
+import { applyTheme } from '../shared/themes';
 
 interface SettingsState extends AppSettings {
   init: () => void;
@@ -17,14 +18,21 @@ export const useSettingsStore = create<SettingsState>((set) => ({
       try {
         const parsed = JSON.parse(saved) as Partial<AppSettings>;
         set(parsed);
+        applyTheme((parsed.theme as 'dark' | 'light') ?? 'dark');
       } catch {
         // Ignore corrupt settings
+        applyTheme('dark');
       }
+    } else {
+      applyTheme('dark');
     }
 
     onMessage('SETTINGS_UPDATE', (msg: WindowMessage) => {
       const settings = msg.payload as Partial<AppSettings>;
       set(settings);
+      if (settings.theme) {
+        applyTheme(settings.theme);
+      }
     });
   },
 
@@ -42,9 +50,14 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         sessionTimeoutMs: updated.sessionTimeoutMs,
         consentAccepted: updated.consentAccepted,
         hardwareAcceleration: updated.hardwareAcceleration,
+        theme: updated.theme,
       }));
       return partial;
     });
+
+    if (partial.theme) {
+      applyTheme(partial.theme);
+    }
 
     sendToMain('update-settings', partial);
   },

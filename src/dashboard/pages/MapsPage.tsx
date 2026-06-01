@@ -75,15 +75,15 @@ const MapCard: React.FC<MapCardProps> = ({
         <>
           {/* Current map */}
           <div>
-            <p className="text-gray-400 text-xs mb-1">Current</p>
-            <p className="text-2xl font-bold text-white leading-tight truncate">
+            <p className="text-[var(--text-secondary)] text-xs mb-1">Current</p>
+            <p className="text-2xl font-bold text-[var(--text-primary)] leading-tight truncate">
               {currentMap}
             </p>
           </div>
 
           {/* Countdown */}
           <div>
-            <p className="text-gray-400 text-xs mb-1">Time Remaining</p>
+            <p className="text-[var(--text-secondary)] text-xs mb-1">Time Remaining</p>
             <p
               className="text-3xl font-bold font-mono"
               style={{ color: borderColor }}
@@ -94,17 +94,17 @@ const MapCard: React.FC<MapCardProps> = ({
 
           {/* Next map */}
           {nextMap && (
-            <div className="mt-auto pt-2 border-t border-white/10">
-              <p className="text-gray-500 text-xs">
+            <div className="mt-auto pt-2 border-t border-[var(--border)]">
+              <p className="text-[var(--text-muted)] text-xs">
                 Next:{' '}
-                <span className="text-gray-300 font-medium">{nextMap}</span>
+                <span className="text-[var(--text-secondary)] font-medium">{nextMap}</span>
               </p>
             </div>
           )}
         </>
       ) : (
         <div className="flex flex-1 items-center justify-center py-6">
-          <p className="text-gray-600 text-sm italic">Connecting to API...</p>
+          <p className="text-[var(--text-muted)] text-sm italic">Connecting to API...</p>
         </div>
       )}
     </div>
@@ -140,7 +140,7 @@ const CraftingSection: React.FC<CraftingSectionProps> = ({ items }) => {
 
   return (
     <div className="glass-card">
-      <h3 className="text-lg font-bold text-white mb-4">Crafting Rotation</h3>
+      <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">Crafting Rotation</h3>
 
       {allItems && allItems.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
@@ -149,7 +149,7 @@ const CraftingSection: React.FC<CraftingSectionProps> = ({ items }) => {
             return (
               <div
                 key={idx}
-                className="bg-white/5 rounded-lg p-3 border border-white/10 flex flex-col gap-2"
+                className="bg-[var(--hover)] rounded-lg p-3 border border-[var(--border)] flex flex-col gap-2"
                 style={{ borderTop: `2px solid ${color}` }}
               >
                 <p
@@ -158,7 +158,7 @@ const CraftingSection: React.FC<CraftingSectionProps> = ({ items }) => {
                 >
                   {entry.rarity}
                 </p>
-                <p className="text-sm font-medium text-white leading-snug line-clamp-2">
+                <p className="text-sm font-medium text-[var(--text-primary)] leading-snug line-clamp-2">
                   {formatCraftingItemName(entry.item)}
                 </p>
                 <p className="text-apex-cyan font-mono font-bold text-sm mt-auto">
@@ -169,7 +169,7 @@ const CraftingSection: React.FC<CraftingSectionProps> = ({ items }) => {
           })}
         </div>
       ) : (
-        <p className="text-gray-600 text-sm italic text-center py-6">
+        <p className="text-[var(--text-muted)] text-sm italic text-center py-6">
           Crafting data will appear when connected to the API
         </p>
       )}
@@ -226,14 +226,14 @@ const MapsPage: React.FC = () => {
       {/* ── Header ── */}
       <header className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-white">Maps &amp; Rotation</h2>
-          <p className="text-gray-400 text-sm mt-1">
+          <h2 className="text-3xl font-bold text-[var(--text-primary)]">Maps &amp; Rotation</h2>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">
             Live map schedule and crafting rotation
           </p>
         </div>
 
         {/* Server status indicator */}
-        <div className="flex items-center gap-2 bg-apex-navy/70 border border-white/10 rounded-lg px-4 py-2">
+        <div className="flex items-center gap-2 bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-4 py-2">
           <span
             className="inline-block w-2.5 h-2.5 rounded-full"
             style={{
@@ -256,14 +256,14 @@ const MapsPage: React.FC = () => {
       {!rotation && (
         <div className="glass-card flex flex-col items-center justify-center py-16 text-center">
           <div style={{ fontSize: 40, marginBottom: 16, opacity: 0.4 }}>🗺️</div>
-          <p className="text-white font-mono font-semibold text-base" style={{ margin: '0 0 4px' }}>Map rotation unavailable</p>
-          <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: 14, margin: 0 }}>Add your API key in Settings to see map rotations, or check your connection.</p>
+          <p className="text-[var(--text-primary)] font-mono font-semibold text-base" style={{ margin: '0 0 4px' }}>Map rotation unavailable</p>
+          <p style={{ color: 'var(--text-muted)', fontSize: 14, margin: 0 }}>Add your API key in Settings to see map rotations, or check your connection.</p>
         </div>
       )}
 
       {/* ── Current Map Rotation (3-column grid) ── */}
       <section>
-        <h3 className="text-base font-semibold text-gray-300 uppercase tracking-wider mb-4">
+        <h3 className="text-base font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
           Current Rotation
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
@@ -304,7 +304,7 @@ const MapsPage: React.FC = () => {
                 Mixtape / LTM
               </span>
               <div className="flex flex-1 items-center justify-center py-6">
-                <p className="text-gray-600 text-sm italic">No LTM Active</p>
+                <p className="text-[var(--text-muted)] text-sm italic">No LTM Active</p>
               </div>
             </div>
           )}

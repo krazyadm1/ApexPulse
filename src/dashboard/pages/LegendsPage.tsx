@@ -65,7 +65,7 @@ export default function LegendsPage() {
   }
 
   function sortIndicator(col: SortColumn) {
-    if (sortCol !== col) return <span className="text-white/20 ml-1">↕</span>;
+    if (sortCol !== col) return <span className="text-[var(--text-muted)] ml-1">↕</span>;
     return <span className="text-apex-cyan ml-1">{sortDir === 'asc' ? '↑' : '↓'}</span>;
   }
 
@@ -79,9 +79,9 @@ export default function LegendsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-apex-navy p-6 space-y-6">
+    <div className="min-h-screen bg-[var(--bg-secondary)] p-6 space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-bold tracking-wide text-white">Legend Analytics</h1>
+        <h1 className="text-2xl font-bold tracking-wide text-[var(--text-primary)]">Legend Analytics</h1>
         <div className="flex flex-wrap gap-2">
           {CLASS_FILTERS.map((filter) => (
             <button
@@ -91,7 +91,7 @@ export default function LegendsPage() {
                 'px-3 py-1.5 rounded text-sm font-mono border transition-colors',
                 classFilter === filter
                   ? 'border-apex-cyan text-apex-cyan bg-apex-cyan/10'
-                  : 'border-white/10 text-white/50 bg-white/5 hover:border-white/30 hover:text-white/80',
+                  : 'border-[var(--border)] text-[var(--text-secondary)] bg-[var(--hover)] hover:border-[var(--border)] hover:text-[var(--text-primary)]',
               ].join(' ')}
             >
               {filter}
@@ -102,21 +102,21 @@ export default function LegendsPage() {
 
       {legendStats.length === 0 ? (
         <div className="glass-card flex items-center justify-center py-24 text-center">
-          <p className="text-white/40 font-mono text-sm">No legend data yet. Play some matches to see your legend analytics!</p>
+          <p className="text-[var(--text-muted)] font-mono text-sm">No legend data yet. Play some matches to see your legend analytics!</p>
         </div>
       ) : (
         <div className="glass-card p-0 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full border-collapse min-w-[750px]">
               <thead>
-                <tr className="border-b border-white/[0.06]">
-                  <th className="px-4 py-3 text-center text-[11px] text-white/45 font-semibold uppercase tracking-wider w-14">Rank</th>
-                  <th className="px-4 py-3 text-left text-[11px] text-white/45 font-semibold uppercase tracking-wider">Legend</th>
+                <tr className="border-b border-[var(--border)]">
+                  <th className="px-4 py-3 text-center text-[11px] text-[var(--text-muted)] font-semibold uppercase tracking-wider w-14">Rank</th>
+                  <th className="px-4 py-3 text-left text-[11px] text-[var(--text-muted)] font-semibold uppercase tracking-wider">Legend</th>
                   {columns.map(({ col, label }) => (
                     <th
                       key={col}
                       onClick={() => handleSort(col)}
-                      className="px-4 py-3 text-right text-[11px] text-white/45 font-semibold uppercase tracking-wider cursor-pointer select-none whitespace-nowrap hover:text-white/70 transition-colors"
+                      className="px-4 py-3 text-right text-[11px] text-[var(--text-muted)] font-semibold uppercase tracking-wider cursor-pointer select-none whitespace-nowrap hover:text-[var(--text-primary)] transition-colors"
                     >
                       {label}{sortIndicator(col)}
                     </th>
@@ -125,27 +125,27 @@ export default function LegendsPage() {
               </thead>
               <tbody>
                 {tableRows.map((row, i) => (
-                  <tr key={row.key} className="border-b border-white/[0.04] hover:bg-cyan-400/[0.04] transition-colors">
-                    <td className="px-4 py-3 text-center text-white/30 font-mono text-sm">{i + 1}</td>
+                  <tr key={row.key} className="border-b border-[var(--border)] hover:bg-cyan-400/[0.04] transition-colors">
+                    <td className="px-4 py-3 text-center text-[var(--text-muted)] font-mono text-sm">{i + 1}</td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
                         {row.icon && (
                           <img
                             src={row.icon}
                             alt={row.displayName}
-                            className="w-8 h-8 rounded-full bg-white/5 object-cover shrink-0"
+                            className="w-8 h-8 rounded-full bg-[var(--hover)] object-cover shrink-0"
                             onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
                           />
                         )}
-                        <span className="text-white font-semibold text-sm">{row.displayName}</span>
+                        <span className="text-[var(--text-primary)] font-semibold text-sm">{row.displayName}</span>
                       </div>
                     </td>
                     <td className="px-4 py-3 text-right font-mono text-sm text-apex-cyan font-bold">{row.kills.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right font-mono text-sm text-white/80">{row.killsPerMatch.toFixed(1)}</td>
-                    <td className="px-4 py-3 text-right font-mono text-sm text-white/80">{row.wins.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-right font-mono text-sm text-white/80">{row.pickRate.toFixed(1)}%</td>
-                    <td className="px-4 py-3 text-right font-mono text-sm text-white/80">{row.dmgPerMatch.toFixed(1)}</td>
-                    <td className="px-4 py-3 text-right font-mono text-sm text-white/60">{row.matches.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right font-mono text-sm text-[var(--text-primary)]">{row.killsPerMatch.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-sm text-[var(--text-primary)]">{row.wins.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right font-mono text-sm text-[var(--text-primary)]">{row.pickRate.toFixed(1)}%</td>
+                    <td className="px-4 py-3 text-right font-mono text-sm text-[var(--text-primary)]">{row.dmgPerMatch.toFixed(1)}</td>
+                    <td className="px-4 py-3 text-right font-mono text-sm text-[var(--text-secondary)]">{row.matches.toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>

@@ -37,9 +37,9 @@ interface CustomTooltipProps {
 const CustomTooltip: React.FC<CustomTooltipProps> = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null;
   return (
-    <div className="bg-apex-navy border border-white/10 rounded-lg px-3 py-2 text-sm shadow-lg">
+    <div className="bg-[var(--bg-secondary)] border border-[var(--border)] rounded-lg px-3 py-2 text-sm shadow-lg">
       {label !== undefined && (
-        <p className="text-gray-400 mb-1 text-xs">Match {label}</p>
+        <p className="text-[var(--text-secondary)] mb-1 text-xs">Match {label}</p>
       )}
       {payload.map((entry) => (
         <p key={entry.name} className="font-mono font-semibold" style={{ color: entry.color }}>
@@ -60,9 +60,9 @@ interface StatCardProps {
 
 const StatCard: React.FC<StatCardProps> = ({ title, value, sub }) => (
   <div className="glass-card flex flex-col gap-1">
-    <span className="text-gray-400 text-xs uppercase tracking-widest">{title}</span>
-    <span className="text-3xl font-bold font-mono text-white leading-tight">{value}</span>
-    {sub && <span className="text-gray-500 text-xs">{sub}</span>}
+    <span className="text-[var(--text-secondary)] text-xs uppercase tracking-widest">{title}</span>
+    <span className="text-3xl font-bold font-mono text-[var(--text-primary)] leading-tight">{value}</span>
+    {sub && <span className="text-[var(--text-muted)] text-xs">{sub}</span>}
   </div>
 );
 
@@ -112,8 +112,8 @@ const HeirloomPackTracker: React.FC = () => {
     <div className="glass-card">
       <div className="flex items-start justify-between mb-1">
         <div>
-          <h3 className="text-lg font-bold text-white">Heirloom Pack Tracker</h3>
-          <p className="text-gray-400 text-sm mt-0.5 max-w-xl">
+          <h3 className="text-lg font-bold text-[var(--text-primary)]">Heirloom Pack Tracker</h3>
+          <p className="text-[var(--text-secondary)] text-sm mt-0.5 max-w-xl">
             Track your progress toward guaranteed Heirloom Shards (500 pack pity timer)
           </p>
         </div>
@@ -124,13 +124,13 @@ const HeirloomPackTracker: React.FC = () => {
           >
             {packCount}
           </span>
-          <span className="font-mono text-xl text-gray-500"> / {PACK_PITY} packs</span>
+          <span className="font-mono text-xl text-[var(--text-muted)]"> / {PACK_PITY} packs</span>
         </div>
       </div>
 
       {/* Progress bar */}
       <div className="mt-5 mb-3">
-        <div className="relative h-4 w-full rounded-full bg-white/5 overflow-hidden">
+        <div className="relative h-4 w-full rounded-full bg-[var(--hover)] overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-500"
             style={{
@@ -149,7 +149,7 @@ const HeirloomPackTracker: React.FC = () => {
             style={{ left: `${(450 / PACK_PITY) * 100}%` }}
           />
         </div>
-        <div className="flex justify-between mt-1 text-xs text-gray-600 font-mono select-none">
+        <div className="flex justify-between mt-1 text-xs text-[var(--text-muted)] font-mono select-none">
           <span>0</span>
           <span className="text-green-600">300</span>
           <span className="text-yellow-600">450</span>
@@ -157,7 +157,7 @@ const HeirloomPackTracker: React.FC = () => {
         </div>
       </div>
 
-      <p className="text-gray-500 text-xs mt-3">
+      <p className="text-[var(--text-muted)] text-xs mt-3">
         Auto-detects pack openings via screen capture. Set your starting count in Settings.
       </p>
     </div>
@@ -255,15 +255,15 @@ const StatsPage: React.FC = () => {
       {/* ── Header ── */}
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-white">Statistics</h2>
-          <p className="text-gray-400 text-sm mt-1">
+          <h2 className="text-3xl font-bold text-[var(--text-primary)]">Statistics</h2>
+          <p className="text-[var(--text-secondary)] text-sm mt-1">
             {totalMatches > 0 ? `${totalMatches} matches tracked` : 'No matches recorded yet.'}
           </p>
         </div>
 
         {/* Time range selector */}
         <CoachMark id="timerange" message="Filter your stats by time period. Play a few matches to see trends in the charts.">
-          <div className="flex gap-2 bg-apex-navy rounded-xl p-1 border border-white/10">
+          <div className="flex gap-2 bg-[var(--bg-secondary)] rounded-xl p-1 border border-[var(--border)]">
             {(Object.keys(TIME_RANGE_LABELS) as TimeRange[]).map((range) => (
               <button
                 key={range}
@@ -271,7 +271,7 @@ const StatsPage: React.FC = () => {
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                   timeRange === range
                     ? 'bg-apex-cyan/15 text-apex-cyan border border-apex-cyan/40'
-                    : 'text-gray-400 hover:text-white hover:bg-white/5 border border-transparent'
+                    : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--hover)] border border-transparent'
                 }`}
               >
                 {TIME_RANGE_LABELS[range]}
@@ -307,14 +307,14 @@ const StatsPage: React.FC = () => {
 
       {/* ── Performance Charts (2-col) ── */}
       <section>
-        <h3 className="text-base font-semibold text-gray-300 uppercase tracking-wider mb-4">
+        <h3 className="text-base font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
           Match Performance
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           {/* Kills Per Match Trend */}
           <div className="glass-card">
-            <h4 className="text-sm font-semibold text-gray-300 mb-4">Kills Per Match</h4>
+            <h4 className="text-sm font-semibold text-[var(--text-secondary)] mb-4">Kills Per Match</h4>
             {hasData ? (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={killsData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
@@ -340,7 +340,7 @@ const StatsPage: React.FC = () => {
 
           {/* Damage Per Match Trend */}
           <div className="glass-card">
-            <h4 className="text-sm font-semibold text-gray-300 mb-4">Damage Per Match</h4>
+            <h4 className="text-sm font-semibold text-[var(--text-secondary)] mb-4">Damage Per Match</h4>
             {hasData ? (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={damageData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
@@ -369,7 +369,7 @@ const StatsPage: React.FC = () => {
 
       {/* ── Headshot % ── */}
       <section>
-        <h3 className="text-base font-semibold text-gray-300 uppercase tracking-wider mb-4">
+        <h3 className="text-base font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
           Avg. Headshot % — Last 7 Games
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -377,11 +377,11 @@ const StatsPage: React.FC = () => {
             {headshotAgg.hasData ? (
               <BodyDiagram headshotPct={headshotAgg.headshotPct} bodyshotPct={headshotAgg.bodyshotPct} />
             ) : (
-              <p className="text-gray-600 text-sm">No headshot data yet — play matches to track accuracy.</p>
+              <p className="text-[var(--text-muted)] text-sm">No headshot data yet — play matches to track accuracy.</p>
             )}
           </div>
           <div className="glass-card">
-            <h4 className="text-sm font-semibold text-gray-300 mb-4">Headshot % Trend</h4>
+            <h4 className="text-sm font-semibold text-[var(--text-secondary)] mb-4">Headshot % Trend</h4>
             {headshotAgg.trend.length > 0 && headshotAgg.hasData ? (
               <ResponsiveContainer width="100%" height={220}>
                 <LineChart data={headshotAgg.trend} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
@@ -409,11 +409,11 @@ const StatsPage: React.FC = () => {
 
       {/* ── K/D Over Time (full width) ── */}
       <section>
-        <h3 className="text-base font-semibold text-gray-300 uppercase tracking-wider mb-4">
+        <h3 className="text-base font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
           K/D Ratio Over Time
         </h3>
         <div className="glass-card">
-          <h4 className="text-sm font-semibold text-gray-300 mb-4">Cumulative K/D</h4>
+          <h4 className="text-sm font-semibold text-[var(--text-secondary)] mb-4">Cumulative K/D</h4>
           {hasData ? (
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={kdData} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
@@ -447,7 +447,7 @@ const StatsPage: React.FC = () => {
 
       {/* ── Heirloom Pack Tracker ── */}
       <section>
-        <h3 className="text-base font-semibold text-gray-300 uppercase tracking-wider mb-4">
+        <h3 className="text-base font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
           Cosmetics
         </h3>
         <HeirloomPackTracker />
@@ -461,7 +461,7 @@ const StatsPage: React.FC = () => {
 
 const EmptyChart: React.FC<{ height: number }> = ({ height }) => (
   <div
-    className="flex items-center justify-center text-gray-600 text-sm"
+    className="flex items-center justify-center text-[var(--text-muted)] text-sm"
     style={{ height }}
   >
     No match data yet — play some games to see your trends.

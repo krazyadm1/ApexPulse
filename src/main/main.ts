@@ -1,14 +1,15 @@
 import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen, shell, Tray, Menu, nativeImage } from 'electron';
 import { execFile } from 'child_process';
 import path from 'path';
-import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, getHeadshotStats, getRpHistory, getWeeklyRpChange, setUserDataPath, exportAllData } from '../background/database';
+import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, getHeadshotStats, getRpHistory, getWeeklyRpChange, setUserDataPath, exportAllData, getStatsInRange, getRpProgressInRange, getPlacementDistribution } from '../background/database';
+import { getCurrentSeason } from '../shared/seasons';
 import { initGep, registerCallbacks, onGameRunningChange, cleanup as cleanupGep } from '../background/gep-manager';
 import {
   setPlayerName, getPlayerName, handleMatchStateChange, handleKillFeed, handleKill,
   handleAssist, handleDamage, handleKnockdown, handleDeath, handleRevive,
   handleTeamUpdate, handleInventoryUpdate, handleMatchSummary,
   handleGameModeDetected, handleMapDetected, handleLegendDetected,
-  handleSquadKills, handleTeamsLeft, updateRankScore, onMatchEnd,
+  handleSquadKills, handleTeamsLeft, handleLocationUpdate, updateRankScore, onMatchEnd,
 } from '../background/match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from '../background/session-manager';
 import { setApiKey, getApiKey, getPlayerStats, getMapRotation, getServerStatus, getGepEventStatus, getCraftingRotation } from '../background/api-client';
@@ -203,6 +204,14 @@ function saveSettings(settings: Partial<AppSettings>): void {
 }
 
 function broadcastFullState(): void {
+  const season = getCurrentSeason();
+  const seasonData = season ? {
+    season: season,
+    stats: getStatsInRange(season.startDate, season.endDate),
+    rpProgress: getRpProgressInRange(season.startDate, season.endDate),
+    placements: getPlacementDistribution(season.startDate, season.endDate),
+  } : null;
+
   broadcast('match-history-update', {
     recentMatches: getRecentMatches(50),
     stats: getOverallStats(),
@@ -211,6 +220,7 @@ function broadcastFullState(): void {
     headshotStats: getHeadshotStats(7),
     rpHistory: getRpHistory(20),
     weeklyRpChange: getWeeklyRpChange(),
+    seasonData,
   });
 
   const session = getCurrentSession();
@@ -467,7 +477,7 @@ async function initApp(): Promise<void> {
     onRevive: handleRevive,
     onTeamUpdate: handleTeamUpdate,
     onInventoryUpdate: handleInventoryUpdate,
-    onLocationUpdate: () => {},
+    onLocationUpdate: handleLocationUpdate,
     onMatchSummary: handleMatchSummary,
     onRosterUpdate: (players) => {
       processRoster(players);

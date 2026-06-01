@@ -17,6 +17,12 @@ interface MatchState {
   rpHistory: Array<{ matchId: string; timestamp: number; rpBefore: number | null; rpAfter: number | null; rpChange: number | null; gameMode: string }>;
   weeklyRpChange: number;
   sessionRpChange: number;
+  seasonData: {
+    season: { id: string; name: string; startDate: number; endDate: number };
+    stats: { totalMatches: number; totalKills: number; totalDamage: number; totalWins: number; totalRpChange: number; avgDamage: number; kdRatio: number; winRate: number };
+    rpProgress: Array<{ timestamp: number; rpAfter: number | null; rpChange: number | null }>;
+    placements: Array<{ bracket: string; count: number }>;
+  } | null;
   init: () => void;
 }
 
@@ -35,6 +41,7 @@ export const useMatchStore = create<MatchState>((set) => ({
   rpHistory: [],
   weeklyRpChange: 0,
   sessionRpChange: 0,
+  seasonData: null,
 
   init: () => {
     onMessage('MATCH_HISTORY_UPDATE', (msg: WindowMessage) => {
@@ -46,6 +53,7 @@ export const useMatchStore = create<MatchState>((set) => ({
         headshotStats: MatchState['headshotStats'];
         rpHistory: MatchState['rpHistory'];
         weeklyRpChange: number;
+        seasonData: MatchState['seasonData'];
       };
       set({
         recentMatches: data.recentMatches,
@@ -61,6 +69,7 @@ export const useMatchStore = create<MatchState>((set) => ({
         headshotStats: data.headshotStats ?? [],
         rpHistory: data.rpHistory ?? [],
         weeklyRpChange: data.weeklyRpChange ?? 0,
+        seasonData: data.seasonData ?? null,
       });
     });
 

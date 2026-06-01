@@ -4,6 +4,8 @@ import {
   Line,
   AreaChart,
   Area,
+  BarChart,
+  Bar,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -221,6 +223,7 @@ const StatsPage: React.FC = () => {
     rpHistory,
     weeklyRpChange,
     sessionRpChange,
+    seasonData,
   } = useMatchStore();
 
   const rank = useProfileStore((s) => s.rank);
@@ -363,6 +366,42 @@ const StatsPage: React.FC = () => {
               )}
             </div>
           </div>
+        </section>
+      )}
+
+      {/* ── Season Stats ── */}
+      {seasonData && seasonData.stats.totalMatches > 0 && (
+        <section>
+          <h3 className="text-base font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
+            {seasonData.season.name}
+          </h3>
+          <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
+            <StatCard title="Matches" value={seasonData.stats.totalMatches.toLocaleString()} />
+            <StatCard title="Kills" value={seasonData.stats.totalKills.toLocaleString()} />
+            <StatCard title="K/D" value={seasonData.stats.kdRatio.toFixed(2)} />
+            <StatCard title="Win Rate" value={`${seasonData.stats.winRate.toFixed(1)}%`} />
+            <div className="glass-card flex flex-col gap-1">
+              <span className="text-[var(--text-secondary)] text-xs uppercase tracking-widest">Season RP</span>
+              <span className={`text-3xl font-bold font-mono leading-tight ${seasonData.stats.totalRpChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                {seasonData.stats.totalRpChange >= 0 ? '+' : ''}{seasonData.stats.totalRpChange}
+              </span>
+            </div>
+          </div>
+          {/* Placement Distribution */}
+          {seasonData.placements.length > 0 && (
+            <div className="glass-card">
+              <h4 className="text-sm font-semibold text-[var(--text-secondary)] mb-4">Placement Distribution</h4>
+              <ResponsiveContainer width="100%" height={180}>
+                <BarChart data={seasonData.placements} layout="vertical" margin={{ top: 0, right: 8, left: 50, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" {...gridStyle} horizontal={false} />
+                  <XAxis type="number" tick={axisStyle} tickLine={false} axisLine={false} allowDecimals={false} />
+                  <YAxis type="category" dataKey="bracket" tick={axisStyle} tickLine={false} axisLine={false} width={60} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Bar dataKey="count" name="Matches" fill="#00E5FF" radius={[0, 3, 3, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
         </section>
       )}
 

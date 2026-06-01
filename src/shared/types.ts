@@ -44,6 +44,9 @@ export interface MatchRecord {
   squadKills: number;
   headshots: number;
   bodyshots: number;
+  deathX?: number;
+  deathY?: number;
+  deathZ?: number;
 }
 
 export interface LegendInfo {

@@ -8,6 +8,7 @@ let playerName = '';
 let postMatchTimer: ReturnType<typeof setTimeout> | null = null;
 let lastKnownRankScore: number | null = null;
 let matchStartRankScore: number | null = null;
+let lastKnownLocation: { x: number; y: number; z: number } | null = null;
 
 type MatchEndCallback = (match: MatchRecord) => void;
 let onMatchEndCallback: MatchEndCallback | null = null;
@@ -141,9 +142,12 @@ export function handleKnockdown(totalKnockdowns: number): void {
   broadcastLiveUpdate(live);
 }
 
+let deathLocation: { x: number; y: number; z: number } | null = null;
+
 export function handleDeath(): void {
   if (live.state !== 'in_match') return;
   live.deaths++;
+  deathLocation = lastKnownLocation ? { ...lastKnownLocation } : null;
   broadcastLiveUpdate(live);
 }
 
@@ -201,6 +205,10 @@ export function handleSquadKills(count: number): void {
   broadcastLiveUpdate(live);
 }
 
+export function handleLocationUpdate(x: number, y: number, z: number): void {
+  lastKnownLocation = { x, y, z };
+}
+
 export function handleTeamsLeft(teams: number): void {
   live.teamsLeft = teams;
   broadcastLiveUpdate(live);
@@ -250,6 +258,9 @@ function finalizeMatch(): void {
     squadKills: live.squadKills,
     headshots: live.headshots,
     bodyshots: live.bodyshots,
+    deathX: deathLocation?.x,
+    deathY: deathLocation?.y,
+    deathZ: deathLocation?.z,
     rpBefore: matchStartRankScore ?? undefined,
     rpAfter: lastKnownRankScore ?? undefined,
     rpChange: (matchStartRankScore != null && lastKnownRankScore != null)

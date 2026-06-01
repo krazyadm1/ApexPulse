@@ -87,6 +87,11 @@ export function initDatabase(): void {
     db.exec('ALTER TABLE matches ADD COLUMN headshots INTEGER NOT NULL DEFAULT 0');
     db.exec('ALTER TABLE matches ADD COLUMN bodyshots INTEGER NOT NULL DEFAULT 0');
   } catch { /* columns already exist */ }
+  try {
+    db.exec('ALTER TABLE matches ADD COLUMN death_x REAL');
+    db.exec('ALTER TABLE matches ADD COLUMN death_y REAL');
+    db.exec('ALTER TABLE matches ADD COLUMN death_z REAL');
+  } catch { /* columns already exist */ }
   console.log('[DB] Initialized at', dbPath);
 }
 
@@ -105,8 +110,8 @@ export function insertMatch(match: MatchRecord): void {
       placement, total_teams, kills, assists, knockdowns, damage,
       revives_given, respawns_given, survival_time, is_win, squad_kills,
       rp_before, rp_after, rp_change, rank_before, rank_after,
-      headshots, bodyshots, session_id, data_source, raw_data)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+      headshots, bodyshots, death_x, death_y, death_z, session_id, data_source, raw_data)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
   const insertWeaponStmt = d.prepare(`
     INSERT OR REPLACE INTO match_weapons (match_id, weapon_name, kills, knockdowns, was_in_loadout)
@@ -123,7 +128,8 @@ export function insertMatch(match: MatchRecord): void {
       match.revivesGiven, match.respawnsGiven, match.survivalTime, match.isWin ? 1 : 0, match.squadKills,
       match.rpBefore ?? null, match.rpAfter ?? null, match.rpChange ?? null,
       match.rankBefore ?? null, match.rankAfter ?? null,
-      match.headshots ?? 0, match.bodyshots ?? 0, null, 'gep', null
+      match.headshots ?? 0, match.bodyshots ?? 0,
+      match.deathX ?? null, match.deathY ?? null, match.deathZ ?? null, null, 'gep', null
     );
 
     const weaponMap = new Map<string, { kills: number; knockdowns: number }>();
@@ -300,7 +306,59 @@ function dbRowToMatchRecord(row: DbMatchRow): MatchRecord {
     rankBefore: row.rank_before ?? undefined, rankAfter: row.rank_after ?? undefined,
     isWin: row.is_win === 1, squadKills: row.squad_kills,
     headshots: (row as any).headshots ?? 0, bodyshots: (row as any).bodyshots ?? 0,
+    deathX: (row as any).death_x ?? undefined, deathY: (row as any).death_y ?? undefined, deathZ: (row as any).death_z ?? undefined,
   };
+}
+
+// === Season-scoped queries ===
+
+export function getMatchesInRange(startTime: number, endTime: number): MatchRecord[] {
+  const rows = requireDb().prepare(
+    'SELECT * FROM matches WHERE timestamp >= ? AND timestamp < ? ORDER BY timestamp DESC'
+  ).all(startTime, endTime) as DbMatchRow[];
+  return rows.map(dbRowToMatchRecord);
+}
+
+export function getStatsInRange(startTime: number, endTime: number) {
+  const row = requireDb().prepare(`
+    SELECT COUNT(*) as totalMatches, COALESCE(SUM(kills),0) as totalKills,
+      COALESCE(SUM(damage),0) as totalDamage, COALESCE(SUM(is_win),0) as totalWins,
+      COALESCE(SUM(rp_change),0) as totalRpChange
+    FROM matches WHERE timestamp >= ? AND timestamp < ?
+  `).get(startTime, endTime) as { totalMatches: number; totalKills: number; totalDamage: number; totalWins: number; totalRpChange: number };
+
+  const deaths = Math.max(row.totalMatches - row.totalWins, 1);
+  return {
+    ...row,
+    avgDamage: row.totalMatches > 0 ? Math.round(row.totalDamage / row.totalMatches) : 0,
+    kdRatio: Math.round((row.totalKills / deaths) * 100) / 100,
+    winRate: row.totalMatches > 0 ? Math.round((row.totalWins / row.totalMatches) * 1000) / 10 : 0,
+  };
+}
+
+export function getRpProgressInRange(startTime: number, endTime: number): Array<{ timestamp: number; rpAfter: number | null; rpChange: number | null }> {
+  return requireDb().prepare(
+    "SELECT timestamp, rp_after as rpAfter, rp_change as rpChange FROM matches WHERE rp_change IS NOT NULL AND timestamp >= ? AND timestamp < ? ORDER BY timestamp ASC"
+  ).all(startTime, endTime) as any;
+}
+
+export function getPlacementDistribution(startTime: number, endTime: number): Array<{ bracket: string; count: number }> {
+  const rows = requireDb().prepare(`
+    SELECT
+      CASE
+        WHEN placement = 1 THEN '1st'
+        WHEN placement <= 3 THEN '2nd-3rd'
+        WHEN placement <= 5 THEN '4th-5th'
+        WHEN placement <= 10 THEN '6th-10th'
+        ELSE '11th+'
+      END as bracket,
+      COUNT(*) as count
+    FROM matches
+    WHERE timestamp >= ? AND timestamp < ? AND placement > 0
+    GROUP BY bracket
+    ORDER BY MIN(placement)
+  `).all(startTime, endTime) as Array<{ bracket: string; count: number }>;
+  return rows;
 }
 
 // === RP Stats ===

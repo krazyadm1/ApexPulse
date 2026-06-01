@@ -93,4 +93,4 @@ ISC
 
 ## Author
 
-**krazyadm** — [Discord](https://discord.gg/Pfd6ScNaSW)
+**krazyadm** — [Discord](https://discord.gg/zcgMzRwJFv)

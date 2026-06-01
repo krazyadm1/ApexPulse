@@ -179,7 +179,7 @@ const App: React.FC = () => {
             <span>Support ApexPulse</span>
           </a>
           <a
-            href="https://discord.gg/Pfd6ScNaSW"
+            href="https://discord.gg/zcgMzRwJFv"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center space-x-2 w-full px-4 py-2 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/30 text-[#5865F2] hover:bg-[#5865F2]/20 transition-colors text-sm font-medium"

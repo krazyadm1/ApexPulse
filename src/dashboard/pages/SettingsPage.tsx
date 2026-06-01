@@ -458,7 +458,7 @@ export default function SettingsPage() {
       {/* ── Community & Support ── */}
       <SectionCard title="Community & Support">
         <a
-          href="https://discord.gg/Pfd6ScNaSW"
+          href="https://discord.gg/zcgMzRwJFv"
           target="_blank"
           rel="noopener noreferrer"
           className="flex items-center gap-4 py-3 px-4 rounded-lg bg-[#5865F2]/10 border border-[#5865F2]/30 hover:bg-[#5865F2]/20 transition-colors"
@@ -476,7 +476,7 @@ export default function SettingsPage() {
             <span className="text-[var(--text-muted)] text-xs">Head to #support in the Discord for assistance</span>
           </div>
           <a
-            href="https://discord.gg/Pfd6ScNaSW"
+            href="https://discord.gg/zcgMzRwJFv"
             target="_blank"
             rel="noopener noreferrer"
             className="border border-[var(--border)] px-4 py-2 rounded-lg hover:bg-[var(--hover)] text-[var(--text-secondary)] text-sm"

@@ -13,7 +13,7 @@ const RatingPrompt: React.FC<RatingPromptProps> = ({ onDismiss }) => {
     if (rating >= 4) {
       setSubmitted(true);
     } else {
-      window.open('https://discord.gg/Pfd6ScNaSW', '_blank');
+      window.open('https://discord.gg/zcgMzRwJFv', '_blank');
       onDismiss();
     }
   };

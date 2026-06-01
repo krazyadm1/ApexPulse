@@ -79,7 +79,7 @@ export default function FaqPage() {
           <p className="text-[var(--text-muted)] text-xs">Get help from the community</p>
         </div>
         <a
-          href="https://discord.gg/Pfd6ScNaSW"
+          href="https://discord.gg/zcgMzRwJFv"
           target="_blank"
           rel="noopener noreferrer"
           className="bg-[#5865F2]/10 border border-[#5865F2]/30 text-[#5865F2] font-bold px-5 py-2 rounded-lg hover:bg-[#5865F2]/20 text-sm"

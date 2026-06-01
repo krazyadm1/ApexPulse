@@ -1,0 +1,23 @@
+Dashboard (8 tabs via sidebar):
+
+Home - Game status, recent matches, stat cards (Kills, K/D, Avg Dmg, Win Rate), Launch Apex button.
+
+Stats - Ranked Progress (rank badge, session/weekly RP, RP sparkline), headshot % body diagram + trend chart, kills/damage/K/D trend charts, heirloom pack tracker.
+
+Weapons - Category filter buttons, top 10 bar chart, sortable table: Rank, Weapon (icon), Category, Kills, Knockdowns, Matches Used, Kills/Match.
+
+Legends - Class filter buttons, sortable table: Rank, Legend (portrait), Kills, Kills/Match, Wins, Pick Rate, DMG/Match, Matches.
+
+History - Mode filter dropdown, match cards with placement/legend/map/kills/damage/RP. Click to expand.
+
+Maps - Live BR/Ranked/LTM map rotation with countdowns, server status, collapsible crafting rotation.
+
+FAQ - 8 accordion Q&A items + Discord link.
+
+Settings - Theme (Dark/Light), API key, overlay toggle/opacity/hotkey, hardware acceleration, linked accounts (EA/Steam/Discord), heirloom counter, Ko-fi support link, data export.
+
+Overlay (Shift+F1): Transparent click-through HUD. Shows kills/damage/KDA/squad kills/teams left during matches. Auto-positions to second monitor.
+
+FTUE: Consent > Welcome > Login > Link Account > API Key > Dashboard.
+
+Ads: 300x250, 728x90, 160x600 slots. Production only. Hidden on minimize. Ad flags: block_top_window_navigation, popup_blocker, mute.

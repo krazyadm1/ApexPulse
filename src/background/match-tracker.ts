@@ -61,13 +61,24 @@ function transitionTo(newState: TrackerState): void {
 export function handleMatchStateChange(state: MatchState): void {
   if (state === 'active' && live.state !== 'in_match') {
     if (postMatchTimer) { clearTimeout(postMatchTimer); postMatchTimer = null; }
+    const prevLegend = live.legend;
+    const prevMap = live.mapName;
+    const prevMode = live.gameMode;
     live = createEmptyLiveData();
+    live.legend = prevLegend;
+    live.mapName = prevMap;
+    live.gameMode = prevMode;
     live.matchStartTime = nowMs();
     transitionTo('in_match');
     broadcastLiveUpdate(live);
   } else if (state === 'inactive' && live.state === 'in_match') {
     transitionTo('post_match');
-    finalizeMatch();
+    // Delay finalization briefly to allow match_summary to arrive
+    if (postMatchTimer) clearTimeout(postMatchTimer);
+    postMatchTimer = setTimeout(() => {
+      postMatchTimer = null;
+      finalizeMatch();
+    }, 2000);
   }
 }
 
@@ -79,14 +90,12 @@ export function handleKillFeed(event: GepKillFeedEvent): void {
 
   if (isPlayerKill) {
     const weapon = event.weaponName;
-    if (event.action === 'kill') {
+    if (event.action === 'kill' || event.action === 'headshot_kill') {
       live.weaponKills[weapon] = (live.weaponKills[weapon] ?? 0) + 1;
     } else if (event.action === 'knockdown') {
       live.weaponKnockdowns[weapon] = (live.weaponKnockdowns[weapon] ?? 0) + 1;
     }
-  }
 
-  if (isPlayerKill) {
     if (event.action === 'headshot_kill') {
       live.headshots++;
     } else if (event.action === 'kill') {
@@ -154,8 +163,16 @@ export function handleMatchSummary(summary: GepMatchSummary): void {
   live.squadKills = Math.max(live.squadKills, summary.squadKills);
   live.totalTeams = summary.teams ?? live.totalTeams;
 
+  if (postMatchTimer) {
+    clearTimeout(postMatchTimer);
+    postMatchTimer = null;
+  }
+
   if (live.state === 'in_match') {
     transitionTo('post_match');
+  }
+
+  if (live.state === 'post_match') {
     finalizeMatch();
   }
 }
@@ -170,6 +187,11 @@ export function handleMapDetected(map: string): void {
 
 export function handleLegendDetected(legend: string): void {
   live.legend = legend;
+}
+
+export function handleSquadKills(count: number): void {
+  live.squadKills = count;
+  broadcastLiveUpdate(live);
 }
 
 export function handleTeamsLeft(teams: number): void {

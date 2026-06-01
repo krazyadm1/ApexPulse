@@ -8,7 +8,7 @@ import {
   handleAssist, handleDamage, handleKnockdown, handleDeath, handleRevive,
   handleTeamUpdate, handleInventoryUpdate, handleMatchSummary,
   handleGameModeDetected, handleMapDetected, handleLegendDetected,
-  handleTeamsLeft, onMatchEnd,
+  handleSquadKills, handleTeamsLeft, onMatchEnd,
 } from '../background/match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from '../background/session-manager';
 import { setApiKey, getApiKey, getPlayerStats, getMapRotation, getServerStatus, getGepEventStatus, getCraftingRotation } from '../background/api-client';
@@ -357,7 +357,7 @@ function setupIpcHandlers(): void {
       case 'map': handleMapDetected(data.map); break;
       case 'legend': handleLegendDetected(data.legend); break;
       case 'player_name': setPlayerName(data.name); setLocalPlayerName(data.name); break;
-      case 'squad_kills': handleKillFeed({ attackerName: getPlayerName() || 'Player', victimName: 'Enemy', weaponName: data.weapon ?? 'R-301', action: 'kill' }); break;
+      case 'squad_kills': handleSquadKills(Number(data.count ?? 1)); break;
       case 'teams_left': handleTeamsLeft(Number(data.teams)); break;
       case 'game_running': broadcast('game-running-update', { running: data.running }); break;
     }

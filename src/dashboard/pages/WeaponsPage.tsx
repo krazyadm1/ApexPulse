@@ -216,6 +216,7 @@ export default function WeaponsPage() {
     let rows = weaponStats.map((ws) => ({
       weaponName: ws.weaponName,
       display: getWeaponDisplay(ws.weaponName),
+      icon: WEAPON_MAP[ws.weaponName]?.icon ?? null,
       category: getWeaponCategory(ws.weaponName),
       kills: ws.totalKills,
       knockdowns: ws.totalKnockdowns,
@@ -508,6 +509,7 @@ export default function WeaponsPage() {
             >
               <thead>
                 <tr>
+                  <th style={{ ...thStyle, textAlign: 'center', width: 50, cursor: 'default' }}>Rank</th>
                   {(
                     [
                       { col: 'weapon', label: 'Weapon' },
@@ -530,7 +532,7 @@ export default function WeaponsPage() {
                 </tr>
               </thead>
               <tbody>
-                {tableRows.map((row) => (
+                {tableRows.map((row, index) => (
                   <tr
                     key={row.weaponName}
                     style={{ transition: 'background 0.1s' }}
@@ -542,8 +544,19 @@ export default function WeaponsPage() {
                       (e.currentTarget as HTMLTableRowElement).style.background = 'transparent';
                     }}
                   >
+                    <td style={{ ...tdStyle, textAlign: 'center', color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>{index + 1}</td>
                     <td style={{ ...tdStyle, color: '#fff', fontWeight: 600 }}>
-                      {row.display}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        {row.icon && (
+                          <img
+                            src={row.icon}
+                            alt={row.display}
+                            style={{ width: 28, height: 28, objectFit: 'contain', opacity: 0.85 }}
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                          />
+                        )}
+                        {row.display}
+                      </div>
                     </td>
                     <td style={{ ...tdStyle, color: 'rgba(255,255,255,0.55)', fontSize: 12 }}>
                       {row.category}

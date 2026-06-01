@@ -1,14 +1,14 @@
 import { app, BrowserWindow, globalShortcut, ipcMain, desktopCapturer, screen, shell, Tray, Menu, nativeImage } from 'electron';
 import { execFile } from 'child_process';
 import path from 'path';
-import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, setUserDataPath, exportAllData } from '../background/database';
+import { initDatabase, saveDatabase, closeDatabase, getRecentMatches, getOverallStats, getWeaponStats, getLegendStats, getHeadshotStats, setUserDataPath, exportAllData } from '../background/database';
 import { initGep, registerCallbacks, onGameRunningChange, cleanup as cleanupGep } from '../background/gep-manager';
 import {
-  setPlayerName, handleMatchStateChange, handleKillFeed, handleKill,
+  setPlayerName, getPlayerName, handleMatchStateChange, handleKillFeed, handleKill,
   handleAssist, handleDamage, handleKnockdown, handleDeath, handleRevive,
   handleTeamUpdate, handleInventoryUpdate, handleMatchSummary,
   handleGameModeDetected, handleMapDetected, handleLegendDetected,
-  onMatchEnd,
+  handleTeamsLeft, onMatchEnd,
 } from '../background/match-tracker';
 import { initSessionManager, onMatchPlayed, endCurrentSession, getCurrentSession } from '../background/session-manager';
 import { setApiKey, getApiKey, getPlayerStats, getMapRotation, getServerStatus, getGepEventStatus, getCraftingRotation } from '../background/api-client';
@@ -109,6 +109,14 @@ function createOverlayWindow(): void {
   overlayWindow.loadFile(path.join(__dirname, 'overlay.html'));
   overlayWindow.setIgnoreMouseEvents(true);
 
+  const settings = loadSettings();
+  if (settings.overlayOpacity !== undefined) {
+    (overlayWindow as any).setOpacity(settings.overlayOpacity);
+  }
+  if (settings.overlayEnabled === false) {
+    overlayWindow.hide();
+  }
+
   overlayWindow.on('moved', () => {
     if (overlayWindow) {
       const [x, y] = overlayWindow.getPosition();
@@ -198,6 +206,7 @@ function broadcastFullState(): void {
     stats: getOverallStats(),
     weaponStats: getWeaponStats(),
     legendStats: getLegendStats(),
+    headshotStats: getHeadshotStats(7),
   });
 
   const session = getCurrentSession();
@@ -307,6 +316,16 @@ function setupIpcHandlers(): void {
       startPolling(settings.pollIntervalMs ?? API_POLL_INTERVAL_MS);
     }
     broadcast('settings-update', settings);
+    if (settings.overlayEnabled !== undefined && overlayWindow) {
+      if (settings.overlayEnabled) {
+        overlayWindow.show();
+      } else {
+        overlayWindow.hide();
+      }
+    }
+    if (settings.overlayOpacity !== undefined && overlayWindow) {
+      (overlayWindow as any).setOpacity(settings.overlayOpacity);
+    }
     if (settings.overlayHotkey !== undefined) {
       registerHotkeys();
     }
@@ -315,6 +334,32 @@ function setupIpcHandlers(): void {
   ipcMain.on('set-pack-count', (_event: unknown, ...args: unknown[]) => {
     const count = args[0] as number;
     broadcast('pack-update', { count, justOpened: 0 });
+  });
+
+  ipcMain.on('dev-sim-event', (_event: unknown, ...args: unknown[]) => {
+    if (process.env.OW_DEV !== 'true') return;
+    const { type, data } = args[0] as { type: string; data: any };
+    console.log(`[DEV-SIM] ${type}:`, JSON.stringify(data));
+    switch (type) {
+      case 'match_state': handleMatchStateChange(data.state); break;
+      case 'kill': handleKill(Number(data.kills ?? 1)); break;
+      case 'assist': handleAssist(Number(data.assists ?? 1)); break;
+      case 'damage': handleDamage(Number(data.damage ?? 100)); break;
+      case 'knockdown': handleKnockdown(Number(data.knockdowns ?? 1)); break;
+      case 'death': handleDeath(); break;
+      case 'revive': handleRevive(); break;
+      case 'kill_feed': handleKillFeed(data); break;
+      case 'team': handleTeamUpdate(data.teammates); break;
+      case 'inventory': handleInventoryUpdate(data.items); break;
+      case 'match_summary': handleMatchSummary(data); break;
+      case 'game_mode': handleGameModeDetected(data.mode); currentGameMode = parseGameMode(data.mode); break;
+      case 'map': handleMapDetected(data.map); break;
+      case 'legend': handleLegendDetected(data.legend); break;
+      case 'player_name': setPlayerName(data.name); setLocalPlayerName(data.name); break;
+      case 'squad_kills': handleKillFeed({ attackerName: getPlayerName() || 'Player', victimName: 'Enemy', weaponName: data.weapon ?? 'R-301', action: 'kill' }); break;
+      case 'teams_left': handleTeamsLeft(Number(data.teams)); break;
+      case 'game_running': broadcast('game-running-update', { running: data.running }); break;
+    }
   });
 }
 

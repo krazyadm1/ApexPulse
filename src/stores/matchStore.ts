@@ -13,6 +13,7 @@ interface MatchState {
   winRate: number;
   weaponStats: Array<{ weaponName: string; totalKills: number; totalKnockdowns: number; matchesUsed: number }>;
   legendStats: Array<{ legend: string; matches: number; kills: number; damage: number; wins: number; avgDamage: number; kdRatio: number }>;
+  headshotStats: Array<{ matchId: string; timestamp: number; headshots: number; bodyshots: number; legend: string }>;
   init: () => void;
 }
 
@@ -27,6 +28,7 @@ export const useMatchStore = create<MatchState>((set) => ({
   winRate: 0,
   weaponStats: [],
   legendStats: [],
+  headshotStats: [],
 
   init: () => {
     onMessage('MATCH_HISTORY_UPDATE', (msg: WindowMessage) => {
@@ -35,6 +37,7 @@ export const useMatchStore = create<MatchState>((set) => ({
         stats: { totalMatches: number; totalKills: number; totalDamage: number; totalWins: number; avgDamage: number; kdRatio: number; winRate: number };
         weaponStats: MatchState['weaponStats'];
         legendStats: MatchState['legendStats'];
+        headshotStats: MatchState['headshotStats'];
       };
       set({
         recentMatches: data.recentMatches,
@@ -47,6 +50,7 @@ export const useMatchStore = create<MatchState>((set) => ({
         winRate: data.stats.winRate,
         weaponStats: data.weaponStats,
         legendStats: data.legendStats,
+        headshotStats: data.headshotStats ?? [],
       });
     });
 

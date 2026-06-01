@@ -42,6 +42,8 @@ export interface MatchRecord {
   rankAfter?: string;
   isWin: boolean;
   squadKills: number;
+  headshots: number;
+  bodyshots: number;
 }
 
 export interface LegendInfo {
@@ -51,12 +53,14 @@ export interface LegendInfo {
   tactical: string;
   ultimate: string;
   passive: string;
+  icon: string;
 }
 
 export interface WeaponInfo {
   display: string;
   category: string;
   ammo: string;
+  icon: string;
 }
 
 // === Database Types ===
@@ -256,7 +260,7 @@ export interface GepKillFeedEvent {
   attackerName: string;
   victimName: string;
   weaponName: string;
-  action: 'kill' | 'knockdown' | 'bleedout';
+  action: 'kill' | 'headshot_kill' | 'knockdown' | 'bleedout';
 }
 
 export interface GepMatchSummary {
@@ -314,6 +318,8 @@ export interface LiveMatchData {
   inventory: string[];
   placement: number | null;
   rpEstimate: number | null;
+  headshots: number;
+  bodyshots: number;
 }
 
 // === Window Messaging Types ===

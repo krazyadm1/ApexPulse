@@ -13,6 +13,7 @@ import {
 import { useMatchStore } from '../../stores/matchStore';
 import { MatchRecord } from '../../shared/types';
 import CoachMark from '../components/CoachMark';
+import BodyDiagram from '../components/BodyDiagram';
 
 // ─── Time Range ───────────────────────────────────────────────────────────────
 
@@ -215,6 +216,7 @@ const StatsPage: React.FC = () => {
     kdRatio,
     winRate,
     avgDamage,
+    headshotStats,
   } = useMatchStore();
 
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
@@ -231,6 +233,21 @@ const StatsPage: React.FC = () => {
   const kdData = useMemo(() => buildKdData(filteredMatches), [filteredMatches]);
 
   const hasData = filteredMatches.length > 0;
+
+  const headshotAgg = useMemo(() => {
+    const totalH = headshotStats.reduce((s, g) => s + g.headshots, 0);
+    const totalB = headshotStats.reduce((s, g) => s + g.bodyshots, 0);
+    const totalHits = totalH + totalB;
+    return {
+      headshotPct: totalHits > 0 ? (totalH / totalHits) * 100 : 0,
+      bodyshotPct: totalHits > 0 ? (totalB / totalHits) * 100 : 0,
+      hasData: totalHits > 0,
+      trend: [...headshotStats].reverse().map((g, i) => {
+        const hits = g.headshots + g.bodyshots;
+        return { game: i + 1, pct: hits > 0 ? (g.headshots / hits) * 100 : 0 };
+      }),
+    };
+  }, [headshotStats]);
 
   return (
     <div className="flex flex-col gap-8 p-8 min-h-full">
@@ -347,6 +364,46 @@ const StatsPage: React.FC = () => {
             )}
           </div>
 
+        </div>
+      </section>
+
+      {/* ── Headshot % ── */}
+      <section>
+        <h3 className="text-base font-semibold text-gray-300 uppercase tracking-wider mb-4">
+          Avg. Headshot % — Last 7 Games
+        </h3>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="glass-card flex items-center justify-center py-8">
+            {headshotAgg.hasData ? (
+              <BodyDiagram headshotPct={headshotAgg.headshotPct} bodyshotPct={headshotAgg.bodyshotPct} />
+            ) : (
+              <p className="text-gray-600 text-sm">No headshot data yet — play matches to track accuracy.</p>
+            )}
+          </div>
+          <div className="glass-card">
+            <h4 className="text-sm font-semibold text-gray-300 mb-4">Headshot % Trend</h4>
+            {headshotAgg.trend.length > 0 && headshotAgg.hasData ? (
+              <ResponsiveContainer width="100%" height={220}>
+                <LineChart data={headshotAgg.trend} margin={{ top: 4, right: 8, left: -10, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" {...gridStyle} />
+                  <XAxis dataKey="game" tick={axisStyle} tickLine={false} axisLine={false} label={{ value: 'Game', fill: '#6B7280', fontSize: 10, position: 'insideBottomRight', offset: -4 }} />
+                  <YAxis tick={axisStyle} tickLine={false} axisLine={false} domain={[0, 'auto']} />
+                  <Tooltip content={<CustomTooltip />} />
+                  <Line
+                    type="monotone"
+                    dataKey="pct"
+                    name="HS %"
+                    stroke="#00E5FF"
+                    strokeWidth={2}
+                    dot={{ r: 3, fill: '#00E5FF', stroke: '#050B14', strokeWidth: 2 }}
+                    activeDot={{ r: 5, fill: '#00E5FF', stroke: '#050B14', strokeWidth: 2 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <EmptyChart height={220} />
+            )}
+          </div>
         </div>
       </section>
 

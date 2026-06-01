@@ -10,6 +10,7 @@ contextBridge.exposeInMainWorld('apexPulse', {
       'login-discord',
       'update-settings',
       'set-pack-count',
+      'dev-sim-event',
     ];
     if (validChannels.includes(channel)) {
       ipcRenderer.send(channel, data);

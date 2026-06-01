@@ -33,7 +33,7 @@ export const LEGAL_URLS = {
 } as const;
 
 export const DEFAULT_SETTINGS: import('./types').AppSettings = {
-  apiKey: '',
+  apiKey: '39e47f334e786791a2ba13c491edce58',
   overlayEnabled: true,
   overlayPosition: { top: 10, left: 10 },
   overlayOpacity: 0.8,

@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS matches (
   squad_kills INTEGER NOT NULL DEFAULT 0,
   rp_before INTEGER, rp_after INTEGER, rp_change INTEGER,
   rank_before TEXT, rank_after TEXT,
+  headshots INTEGER NOT NULL DEFAULT 0, bodyshots INTEGER NOT NULL DEFAULT 0,
   session_id TEXT, data_source TEXT NOT NULL DEFAULT 'gep', raw_data TEXT
 );
 CREATE TABLE IF NOT EXISTS match_weapons (
@@ -81,6 +82,11 @@ export function initDatabase(): void {
   db.pragma('journal_mode = WAL');
   db.pragma('foreign_keys = ON');
   db.exec(SCHEMA_SQL);
+  // Migrate: add headshot columns if missing
+  try {
+    db.exec('ALTER TABLE matches ADD COLUMN headshots INTEGER NOT NULL DEFAULT 0');
+    db.exec('ALTER TABLE matches ADD COLUMN bodyshots INTEGER NOT NULL DEFAULT 0');
+  } catch { /* columns already exist */ }
   console.log('[DB] Initialized at', dbPath);
 }
 
@@ -98,8 +104,9 @@ export function insertMatch(match: MatchRecord): void {
     INSERT OR REPLACE INTO matches (id, timestamp, duration, game_mode, map_name, legend,
       placement, total_teams, kills, assists, knockdowns, damage,
       revives_given, respawns_given, survival_time, is_win, squad_kills,
-      rp_before, rp_after, rp_change, rank_before, rank_after, session_id, data_source, raw_data)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
+      rp_before, rp_after, rp_change, rank_before, rank_after,
+      headshots, bodyshots, session_id, data_source, raw_data)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`);
 
   const insertWeaponStmt = d.prepare(`
     INSERT OR REPLACE INTO match_weapons (match_id, weapon_name, kills, knockdowns, was_in_loadout)
@@ -115,7 +122,8 @@ export function insertMatch(match: MatchRecord): void {
       match.placement, match.totalTeams, match.kills, match.assists, match.knockdowns, match.damage,
       match.revivesGiven, match.respawnsGiven, match.survivalTime, match.isWin ? 1 : 0, match.squadKills,
       match.rpBefore ?? null, match.rpAfter ?? null, match.rpChange ?? null,
-      match.rankBefore ?? null, match.rankAfter ?? null, null, 'gep', null
+      match.rankBefore ?? null, match.rankAfter ?? null,
+      match.headshots ?? 0, match.bodyshots ?? 0, null, 'gep', null
     );
 
     const weaponMap = new Map<string, { kills: number; knockdowns: number }>();
@@ -291,7 +299,16 @@ function dbRowToMatchRecord(row: DbMatchRow): MatchRecord {
     rpBefore: row.rp_before ?? undefined, rpAfter: row.rp_after ?? undefined, rpChange: row.rp_change ?? undefined,
     rankBefore: row.rank_before ?? undefined, rankAfter: row.rank_after ?? undefined,
     isWin: row.is_win === 1, squadKills: row.squad_kills,
+    headshots: (row as any).headshots ?? 0, bodyshots: (row as any).bodyshots ?? 0,
   };
+}
+
+// === Headshot Stats ===
+
+export function getHeadshotStats(limit = 7): Array<{ matchId: string; timestamp: number; headshots: number; bodyshots: number; legend: string }> {
+  return requireDb().prepare(
+    'SELECT id as matchId, timestamp, headshots, bodyshots, legend FROM matches ORDER BY timestamp DESC LIMIT ?'
+  ).all(limit) as Array<{ matchId: string; timestamp: number; headshots: number; bodyshots: number; legend: string }>;
 }
 
 // === Export ===

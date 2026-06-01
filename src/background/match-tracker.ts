@@ -47,6 +47,8 @@ function createEmptyLiveData(): LiveMatchData {
     inventory: [],
     placement: null,
     rpEstimate: null,
+    headshots: 0,
+    bodyshots: 0,
   };
 }
 
@@ -84,7 +86,15 @@ export function handleKillFeed(event: GepKillFeedEvent): void {
     }
   }
 
-  if (isPlayerTeamKill && event.action === 'kill') {
+  if (isPlayerKill) {
+    if (event.action === 'headshot_kill') {
+      live.headshots++;
+    } else if (event.action === 'kill') {
+      live.bodyshots++;
+    }
+  }
+
+  if (isPlayerTeamKill && (event.action === 'kill' || event.action === 'headshot_kill')) {
     live.squadKills++;
   }
 
@@ -209,6 +219,8 @@ function finalizeMatch(): void {
     loadoutFinal: [...live.inventory],
     isWin: live.placement === 1,
     squadKills: live.squadKills,
+    headshots: live.headshots,
+    bodyshots: live.bodyshots,
   };
 
   try {

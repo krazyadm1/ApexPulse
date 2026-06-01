@@ -371,6 +371,7 @@ export interface AppSettings {
   pollIntervalMs: number;
   sessionTimeoutMs: number;
   consentAccepted: boolean;
+  hardwareAcceleration: boolean;
 }
 
 // === Auth Types ===

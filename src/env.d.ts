@@ -10,6 +10,7 @@ declare module 'electron' {
     whenReady: () => Promise<void>;
     on: (event: string, handler: (...args: unknown[]) => void) => void;
     quit: () => void;
+    disableHardwareAcceleration: () => void;
   };
   export class BrowserWindow {
     constructor(options: Record<string, unknown>);

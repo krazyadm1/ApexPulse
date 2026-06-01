@@ -187,6 +187,7 @@ function loadSettings(): AppSettings & Record<string, string> {
       autoDetectOrigin: true,
       pollIntervalMs: API_POLL_INTERVAL_MS,
       sessionTimeoutMs: 30 * 60 * 1000,
+      hardwareAcceleration: true,
     } as AppSettings & Record<string, string>;
   }
 }
@@ -567,6 +568,11 @@ async function initApp(): Promise<void> {
 
 if (process.env.OW_DEV === 'true') {
   (app as any).commandLine.appendSwitch('owepm-packages-url', 'https://electronapi-qa.overwolf.com/packages');
+}
+
+const earlySettings = loadSettings();
+if (earlySettings.hardwareAcceleration === false) {
+  (app as any).disableHardwareAcceleration();
 }
 
 app.whenReady().then(initApp).catch(err => console.error('[ApexPulse] Fatal init error:', err));

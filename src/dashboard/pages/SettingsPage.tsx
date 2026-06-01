@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettingsStore } from '../../stores/settingsStore';
 import { useAuthStore } from '../../stores/authStore';
-import { LEGAL_URLS } from '../../shared/constants';
+import { LEGAL_URLS, DONATION_URL } from '../../shared/constants';
 import Tooltip from '../components/Tooltip';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -120,6 +120,7 @@ export default function SettingsPage() {
     overlayEnabled,
     overlayOpacity,
     overlayHotkey,
+    hardwareAcceleration,
     updateSettings,
   } = useSettingsStore();
 
@@ -368,6 +369,19 @@ export default function SettingsPage() {
         </div>
       </SectionCard>
 
+      {/* ── Performance ── */}
+      <SectionCard title="Performance">
+        <Toggle
+          checked={hardwareAcceleration}
+          onChange={val => {
+            updateSettings({ hardwareAcceleration: val });
+            alert('Restart ApexPulse for this change to take effect.');
+          }}
+          label="Hardware Acceleration"
+        />
+        <span className="text-white/30 text-xs block mt-1">Uses GPU for rendering. Disable if you experience visual glitches. Requires restart.</span>
+      </SectionCard>
+
       {/* ── Heirloom Pack Tracker ── */}
       <SectionCard title="Heirloom Pack Tracker">
         <div className="flex flex-col gap-2">
@@ -452,6 +466,24 @@ export default function SettingsPage() {
           <a href={LEGAL_URLS.termsOfUse} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-apex-cyan transition-colors">Terms of Use</a>
           <a href={LEGAL_URLS.privacyPolicy} target="_blank" rel="noopener noreferrer" className="text-white/40 hover:text-apex-cyan transition-colors">Privacy Policy</a>
         </div>
+      </SectionCard>
+
+      {/* ── Support ApexPulse ── */}
+      <SectionCard title="Support ApexPulse">
+        <p className="text-white/60 text-sm mb-3">
+          ApexPulse is free and always will be. If it's helped your gameplay, consider supporting development.
+        </p>
+        <a
+          href={DONATION_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 bg-amber-500/20 border border-amber-500/40 text-amber-400 px-4 py-2 rounded-lg hover:bg-amber-500/30 transition-colors text-sm font-medium"
+        >
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+          Support on Ko-fi
+        </a>
       </SectionCard>
 
       {/* ── Data Management ── */}

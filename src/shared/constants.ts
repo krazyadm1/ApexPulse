@@ -42,7 +42,10 @@ export const DEFAULT_SETTINGS: import('./types').AppSettings = {
   pollIntervalMs: API_POLL_INTERVAL_MS,
   sessionTimeoutMs: SESSION_TIMEOUT_MS,
   consentAccepted: false,
+  hardwareAcceleration: true,
 };
+
+export const DONATION_URL = 'https://ko-fi.com/apexpulse';
 
 export const WINDOW_NAMES = {
   background: 'background',

@@ -41,6 +41,7 @@ export const useSettingsStore = create<SettingsState>((set) => ({
         pollIntervalMs: updated.pollIntervalMs,
         sessionTimeoutMs: updated.sessionTimeoutMs,
         consentAccepted: updated.consentAccepted,
+        hardwareAcceleration: updated.hardwareAcceleration,
       }));
       return partial;
     });

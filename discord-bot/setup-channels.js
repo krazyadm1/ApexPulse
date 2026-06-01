@@ -27,7 +27,7 @@ function buildWelcomeEmbed() {
       '• [Download ApexPulse](https://github.com/krazyadm1/ApexPulse/releases) — Latest release\n' +
       '• [Report a Bug](https://discord.com/channels/' + GUILD_ID + '/bug-reports) — Help us improve\n' +
       '• [Request a Feature](https://discord.com/channels/' + GUILD_ID + '/feature-requests) — Tell us what you want\n' +
-      '• [Ko-fi](https://ko-fi.com/apexpulse) — Support development'
+      '• [Ko-fi](https://ko-fi.com/krazyadm) — Support development'
     )
     .setImage('https://raw.githubusercontent.com/krazyadm1/ApexPulse/master/assets/icons/icon.png')
     .setFooter({ text: 'ApexPulse — The Apex Legends tracker that actually works.' })
@@ -120,7 +120,7 @@ const FAQ_ITEMS = [
   },
   {
     q: 'Is ApexPulse free?',
-    a: 'Yes, 100% free with no paywalled features. If you want to support development, you can donate via [Ko-fi](https://ko-fi.com/apexpulse).',
+    a: 'Yes, 100% free with no paywalled features. If you want to support development, you can donate via [Ko-fi](https://ko-fi.com/krazyadm).',
   },
 ];
 

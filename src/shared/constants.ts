@@ -49,7 +49,7 @@ export const DEFAULT_SETTINGS: import('./types').AppSettings = {
   theme: 'dark' as const,
 };
 
-export const DONATION_URL = 'https://ko-fi.com/apexpulse';
+export const DONATION_URL = 'https://ko-fi.com/krazyadm';
 
 export const WINDOW_NAMES = {
   background: 'background',

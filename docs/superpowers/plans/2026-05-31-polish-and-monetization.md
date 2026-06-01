@@ -301,7 +301,7 @@ Add a "Support ApexPulse" option. No paywall — all features stay free. This ad
 
 In `src/shared/constants.ts`:
 ```typescript
-export const DONATION_URL = 'https://ko-fi.com/apexpulse'; // Replace with real URL
+export const DONATION_URL = 'https://ko-fi.com/krazyadm'; // Replace with real URL
 ```
 
 - [ ] **Step 2: Add support button to sidebar**

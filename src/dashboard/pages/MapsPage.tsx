@@ -118,6 +118,14 @@ interface CraftingSectionProps {
 }
 
 const CraftingSection: React.FC<CraftingSectionProps> = ({ items }) => {
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('apexpulse_crafting_collapsed') === 'true');
+
+  function toggleCollapsed() {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem('apexpulse_crafting_collapsed', String(next));
+  }
+
   // Flatten all bundle contents into a single list
   const allItems =
     items && items.length > 0
@@ -140,9 +148,15 @@ const CraftingSection: React.FC<CraftingSectionProps> = ({ items }) => {
 
   return (
     <div className="glass-card">
-      <h3 className="text-lg font-bold text-[var(--text-primary)] mb-4">Crafting Rotation</h3>
+      <button
+        onClick={toggleCollapsed}
+        className="flex items-center gap-2 text-lg font-bold text-[var(--text-primary)] mb-4 hover:text-apex-cyan transition-colors w-full text-left"
+      >
+        <span className="text-[var(--text-muted)] text-sm">{collapsed ? '▸' : '▾'}</span>
+        Crafting Rotation
+      </button>
 
-      {allItems && allItems.length > 0 ? (
+      {!collapsed && allItems && allItems.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-6 gap-3">
           {allItems.map((entry, idx) => {
             const color = rarityColors[entry.rarity] ?? '#9CA3AF';
@@ -168,11 +182,11 @@ const CraftingSection: React.FC<CraftingSectionProps> = ({ items }) => {
             );
           })}
         </div>
-      ) : (
+      ) : !collapsed ? (
         <p className="text-[var(--text-muted)] text-sm italic text-center py-6">
           Crafting data will appear when connected to the API
         </p>
-      )}
+      ) : null}
     </div>
   );
 };

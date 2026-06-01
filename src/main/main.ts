@@ -30,6 +30,7 @@ let pollTimer: ReturnType<typeof setInterval> | null = null;
 let gepStatusTimer: ReturnType<typeof setInterval> | null = null;
 let currentGameMode: string | null = null;
 let isQuitting = false;
+let cachedMapData: { rotation: unknown; crafting: unknown; serversOnline: boolean } | null = null;
 
 function createDashboardWindow(): void {
   dashboardWindow = new BrowserWindow({
@@ -246,7 +247,10 @@ async function triggerPoll(): Promise<void> {
       if (!category || typeof category !== 'object') return true;
       return Object.values(category as Record<string, { Status?: string }>).every(region => region?.Status === 'UP' || region?.Status === 'SLOW');
     }) : true;
-    if (maps) broadcast('map-rotation-update', { rotation: maps, crafting, serversOnline });
+    if (maps) {
+      cachedMapData = { rotation: maps, crafting, serversOnline };
+      broadcast('map-rotation-update', cachedMapData);
+    }
   } catch {
     broadcastError('api_maps', 'Could not fetch map rotation. Will retry shortly.');
   }
@@ -279,6 +283,7 @@ function registerHotkeys(): void {
 function setupIpcHandlers(): void {
   ipcMain.on('request-state', () => {
     broadcastFullState();
+    if (cachedMapData) broadcast('map-rotation-update', cachedMapData);
     checkIfApexRunning();
     triggerPoll();
   });

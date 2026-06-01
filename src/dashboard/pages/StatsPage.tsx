@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { useMatchStore } from '../../stores/matchStore';
+import { useProfileStore } from '../../stores/profileStore';
 import { MatchRecord } from '../../shared/types';
 import CoachMark from '../components/CoachMark';
 import BodyDiagram from '../components/BodyDiagram';
@@ -222,6 +223,8 @@ const StatsPage: React.FC = () => {
     sessionRpChange,
   } = useMatchStore();
 
+  const rank = useProfileStore((s) => s.rank);
+
   const [timeRange, setTimeRange] = useState<TimeRange>('all');
 
   // Time range filtering is wired up for future implementation.
@@ -309,12 +312,27 @@ const StatsPage: React.FC = () => {
       </section>
 
       {/* ── Ranked RP Tracking ── */}
-      {(rpHistory.length > 0 || sessionRpChange !== 0 || weeklyRpChange !== 0) && (
+      {(rank || rpHistory.length > 0 || sessionRpChange !== 0 || weeklyRpChange !== 0) && (
         <section>
           <h3 className="text-base font-semibold text-[var(--text-secondary)] uppercase tracking-wider mb-4">
             Ranked Progress
           </h3>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+            {/* Current Rank */}
+            <div className="glass-card flex flex-col items-center justify-center gap-2 py-4">
+              {rank?.rankImg && (
+                <img src={rank.rankImg} alt={rank.rankName} className="w-16 h-16 object-contain" />
+              )}
+              <div className="text-center">
+                <div className="text-[var(--text-primary)] font-bold text-lg">
+                  {rank ? `${rank.rankName} ${rank.rankDiv}` : 'Unranked'}
+                </div>
+                <div className="text-apex-cyan font-mono text-sm font-semibold">
+                  {rank ? `${rank.rankScore.toLocaleString()} RP` : '—'}
+                </div>
+              </div>
+            </div>
+            {/* Session RP */}
             <div className="glass-card flex flex-col gap-1">
               <span className="text-[var(--text-secondary)] text-xs uppercase tracking-widest">Session RP</span>
               <span className={`text-3xl font-bold font-mono leading-tight ${sessionRpChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -322,6 +340,7 @@ const StatsPage: React.FC = () => {
               </span>
               <span className="text-[var(--text-muted)] text-xs">Current session</span>
             </div>
+            {/* Weekly RP */}
             <div className="glass-card flex flex-col gap-1">
               <span className="text-[var(--text-secondary)] text-xs uppercase tracking-widest">Weekly RP</span>
               <span className={`text-3xl font-bold font-mono leading-tight ${weeklyRpChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
@@ -329,6 +348,7 @@ const StatsPage: React.FC = () => {
               </span>
               <span className="text-[var(--text-muted)] text-xs">Last 7 days</span>
             </div>
+            {/* RP Sparkline */}
             <div className="glass-card">
               <span className="text-[var(--text-secondary)] text-xs uppercase tracking-widest">RP Per Match</span>
               {rpHistory.length > 0 ? (
@@ -339,7 +359,7 @@ const StatsPage: React.FC = () => {
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <span className="text-[var(--text-muted)] text-xs mt-2 block">Play ranked matches to see RP trends</span>
+                <span className="text-[var(--text-muted)] text-xs mt-2 block">Play ranked to see RP trends</span>
               )}
             </div>
           </div>
